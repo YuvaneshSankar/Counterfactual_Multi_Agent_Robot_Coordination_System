@@ -1,0 +1,58 @@
+# Core ML/RL Libraries
+torch==2.1.2
+torchvision==0.16.2
+torchaudio==0.16.2
+numpy==1.24.3
+scipy==1.11.4
+
+# Environment & Simulation
+pybullet==3.2.6
+gymnasium==0.29.1
+gym==0.26.2
+
+# Utilities
+matplotlib==3.8.2
+tensorboard==2.15.1
+pyyaml==6.0.1
+python-dotenv==1.0.0
+tqdm==4.66.1
+pandas==2.1.3
+seaborn==0.13.0
+
+# Visualization & Monitoring
+plotly==5.18.0
+dash==2.14.2
+dash-bootstrap-components==1.5.0
+
+# Code Quality & Testing
+pytest==7.4.3
+pytest-cov==4.1.0
+black==23.12.0
+flake8==6.1.0
+mypy==1.7.1
+
+# Development
+jupyter==1.0.0
+jupyterlab==4.0.9
+ipython==8.18.1
+
+# Optional: For real robotics integration
+# rclpy==0.13.0  # ROS2 Python client
+# geometry-msgs==0.0.12  # ROS2 geometry messages
+
+# Optional: For advanced physics simulation
+# mujoco==3.0.1
+# dm-control==1.0.10
+
+# Logging & Experiment Tracking
+wandb==0.16.1
+
+# Image processing (for potential vision-based observations)
+pillow==10.1.0
+opencv-python==4.8.1.78
+
+# Parallel processing
+joblib==1.3.2
+
+# Type checking utilities
+typing-extensions==4.8.0
