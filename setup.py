@@ -20,17 +20,17 @@ setup(
 
     version='1.0.0',
 
-    description='Multi-Agent Warehouse Robot Coordination with Continuous COMA Algorithm',
+    description='Counterfactual_Multi_Agent_Robot_Coordination_System',
 
     long_description=long_description,
 
     long_description_content_type='text/markdown',
 
-    url='https://github.com/yourusername/warehouse-coma-marl',
+    url='https://github.com/YuvaneshSankar/Counterfactual_Multi_Agent_Robot_Coordination_System',
 
-    author='Your Name',
+    author='Yuvanesh Sankar',
 
-    author_email='your.email@example.com',
+    author_email='yuvanesh.skv@example.com',
 
     license='MIT',
 
@@ -116,9 +116,8 @@ setup(
 
     # PyPI upload metadata
     project_urls={
-        'Bug Reports': 'https://github.com/yourusername/warehouse-coma-marl/issues',
-        'Source': 'https://github.com/yourusername/warehouse-coma-marl',
-        'Documentation': 'https://warehouse-coma-marl.readthedocs.io',
+        'Bug Reports': 'https://github.com/YuvaneshSankar/Counterfactual_Multi_Agent_Robot_Coordination_System/issues',
+        'Source': 'https://github.com/YuvaneshSankar/Counterfactual_Multi_Agent_Robot_Coordination_System'
     },
 
     zip_safe=False,
