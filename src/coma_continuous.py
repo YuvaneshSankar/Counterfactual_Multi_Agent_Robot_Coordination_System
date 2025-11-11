@@ -1,4 +1,6 @@
-
+"""
+My main aim here is to implement COMA for a continuous action space.
+"""
 
 import torch
 import torch.nn.functional as F
@@ -17,15 +19,7 @@ Experience = namedtuple(
 )
 
 class COMAcontinuous:
-    """
-    Counterfactual Multi-Agent Policy Gradients (COMA) for Continuous Action Spaces.
 
-    COMA uses a centralized critic during training to estimate counterfactual baselines
-    for each agent. This reduces variance in policy gradient estimation while maintaining
-    decentralized execution by using only local observations.
-
-    Key Innovation: Extends original discrete COMA to continuous actions using Gaussian policies.
-    """
 
     def __init__(
         self,
@@ -37,18 +31,7 @@ class COMAcontinuous:
         config: Dict,
         device: torch.device = torch.device('cpu')
     ):
-        """
-        Initialize COMA algorithm.
 
-        Args:
-            actor_network: Actor network for policy π(a|o)
-            critic_network: Critic network for value Q(s, u)
-            num_agents: Number of agents in the system
-            action_dim: Dimension of action space
-            state_dim: Dimension of state space
-            config: Configuration dictionary with hyperparameters
-            device: PyTorch device (CPU or CUDA)
-        """
         self.actor_network = actor_network.to(device)
         self.critic_network = critic_network.to(device)
         self.num_agents = num_agents
