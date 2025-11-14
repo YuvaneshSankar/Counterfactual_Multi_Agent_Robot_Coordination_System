@@ -1,0 +1,56 @@
+# Small Warehouse Configuration
+# For testing and quick iterations
+
+environment:
+  warehouse_size:
+    width: 50.0
+    height: 40.0
+  num_robots: 2
+  max_episode_steps: 1000
+  task_arrival_rate: 0.15
+  max_pending_tasks: 20
+  robot:
+    radius: 0.5
+    battery_capacity: 100.0
+    battery_discharge_rate: 0.05
+    max_linear_velocity: 2.0
+  obstacles:
+    num_shelves: 4
+    shelf_width: 2.5
+    shelf_height: 1.5
+  charging_stations: 1
+  delivery_zones: 1
+
+algorithm:
+  actor:
+    hidden_dims: [128, 128]
+  critic:
+    hidden_dims: [128, 128]
+  actor_lr: 5e-4
+  critic_lr: 5e-4
+  buffer_size: 50000
+
+training:
+  total_timesteps: 100000
+  rollout_steps: 1000
+  batch_size: 32
+  num_epochs: 5
+  eval_frequency: 2000
+  eval_episodes: 5
+  checkpoint_frequency: 5000
+
+curriculum:
+  enabled: false
+
+rewards:
+  task_completion: 10.0
+  time_step_penalty: -0.01
+  collision_penalty: -5.0
+
+device:
+  device_type: 'cpu'
+  num_workers: 2
+
+experiment:
+  name: 'COMAR_Small_Warehouse'
+  description: 'Small warehouse configuration for quick testing'
