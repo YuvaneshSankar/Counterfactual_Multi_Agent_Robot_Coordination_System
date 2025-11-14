@@ -1,0 +1,82 @@
+# Large Warehouse Configuration
+# For scalability and stress testing
+
+environment:
+  warehouse_size:
+    width: 200.0
+    height: 150.0
+  num_robots: 20
+  max_episode_steps: 5000
+  task_arrival_rate: 0.8
+  max_pending_tasks: 200
+  robot:
+    radius: 0.4
+    battery_capacity: 150.0
+    battery_discharge_rate: 0.05
+    max_linear_velocity: 2.5
+  obstacles:
+    num_shelves: 30
+    shelf_width: 4.0
+    shelf_height: 2.5
+    aisle_width: 6.0
+  charging_stations: 5
+  delivery_zones: 8
+
+algorithm:
+  actor:
+    hidden_dims: [512, 512]
+  critic:
+    hidden_dims: [512, 512]
+  actor_lr: 1e-4
+  critic_lr: 1e-4
+  buffer_size: 500000
+  gamma: 0.995
+
+training:
+  total_timesteps: 5000000
+  num_envs: 4
+  rollout_steps: 4000
+  batch_size: 128
+  num_epochs: 20
+  eval_frequency: 10000
+  eval_episodes: 20
+  checkpoint_frequency: 50000
+
+curriculum:
+  enabled: true
+  stages:
+    stage1:
+      duration: 1000000
+      num_robots: 5
+      task_arrival_rate: 0.2
+    stage2:
+      duration: 2000000
+      num_robots: 10
+      task_arrival_rate: 0.5
+    stage3:
+      duration: 2000000
+      num_robots: 20
+      task_arrival_rate: 0.8
+
+rewards:
+  task_completion: 15.0
+  task_completion_bonus: 10.0
+  coordination_bonus: 2.0
+  collision_penalty: -10.0
+
+coordination:
+  task_allocator:
+    strategy: 'priority_aware'
+    reallocation_frequency: 50
+  communication:
+    communication_range: 50.0
+
+device:
+  device_type: 'cuda'
+  device_id: 0
+  num_workers: 8
+  mixed_precision: true
+
+experiment:
+  name: 'COMAR_Large_Warehouse'
+  description: 'Large warehouse configuration for scalability testing'
