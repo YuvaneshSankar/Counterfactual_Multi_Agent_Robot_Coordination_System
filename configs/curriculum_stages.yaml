@@ -1,0 +1,232 @@
+# Advanced Curriculum Learning Stages Configuration
+# Progressive difficulty scheduling for multi-robot learning
+
+curriculum:
+  enabled: true
+  type: 'adaptive'
+
+  # Stage 1: Foundation - Single robot, simple environment
+  stage1:
+    name: 'Foundation'
+    duration: 100000
+    description: 'Single robot learns basic navigation and task completion'
+
+    environment:
+      num_robots: 1
+      warehouse_size:
+        width: 30.0
+        height: 25.0
+      obstacles:
+        num_shelves: 2
+      task_arrival_rate: 0.05
+      max_episode_steps: 500
+
+    algorithm:
+      actor_lr: 5e-4
+      critic_lr: 5e-4
+
+    rewards:
+      task_completion: 10.0
+      time_step_penalty: -0.01
+
+  # Stage 2: Coordination Introduction - Two robots, sparse tasks
+  stage2:
+    name: 'Coordination_Introduction'
+    duration: 200000
+    description: 'Two robots learn basic coordination without heavy interference'
+
+    environment:
+      num_robots: 2
+      warehouse_size:
+        width: 50.0
+        height: 40.0
+      obstacles:
+        num_shelves: 4
+      task_arrival_rate: 0.1
+      max_episode_steps: 1000
+
+    algorithm:
+      actor_lr: 3e-4
+      critic_lr: 3e-4
+
+    coordination:
+      communication:
+        enabled: true
+        communication_range: 30.0
+
+    rewards:
+      task_completion: 12.0
+      coordination_bonus: 1.0
+
+  # Stage 3: Team Formation - Multiple robots, moderate density
+  stage3:
+    name: 'Team_Formation'
+    duration: 300000
+    description: 'Team of 5 robots learns coordinated multi-task handling'
+
+    environment:
+      num_robots: 5
+      warehouse_size:
+        width: 100.0
+        height: 80.0
+      obstacles:
+        num_shelves: 8
+      task_arrival_rate: 0.3
+      max_episode_steps: 2000
+
+    algorithm:
+      actor_lr: 1e-4
+      critic_lr: 1e-4
+      buffer_size: 100000
+
+    coordination:
+      task_allocator:
+        strategy: 'priority_aware'
+        reallocation_frequency: 100
+      communication:
+        enabled: true
+        communication_range: 35.0
+
+    rewards:
+      task_completion: 15.0
+      coordination_bonus: 2.0
+
+  # Stage 4: Scalability - Large fleet, high density
+  stage4:
+    name: 'Scalability'
+    duration: 300000
+    description: 'Larger fleet learns to handle high task density and congestion'
+
+    environment:
+      num_robots: 10
+      warehouse_size:
+        width: 150.0
+        height: 120.0
+      obstacles:
+        num_shelves: 20
+      task_arrival_rate: 0.6
+      max_episode_steps: 3000
+
+    algorithm:
+      actor_lr: 5e-5
+      critic_lr: 5e-5
+      buffer_size: 250000
+
+    coordination:
+      task_allocator:
+        strategy: 'priority_aware'
+        reallocation_frequency: 50
+      communication:
+        enabled: true
+        communication_range: 40.0
+      battery_manager:
+        enable_proactive_charging: true
+
+    rewards:
+      task_completion: 20.0
+      coordination_bonus: 3.0
+      collision_penalty: -8.0
+
+  # Stage 5: Challenge - Very large fleet, complex environment
+  stage5:
+    name: 'Challenge'
+    duration: 400000
+    description: 'Maximum complexity with large fleet in densely packed warehouse'
+
+    environment:
+      num_robots: 20
+      warehouse_size:
+        width: 200.0
+        height: 150.0
+      obstacles:
+        num_shelves: 40
+      task_arrival_rate: 1.0
+      max_episode_steps: 4000
+      task_priority_range: [1, 10]
+      task_deadline_range: [100, 200]
+
+    algorithm:
+      actor_lr: 1e-5
+      critic_lr: 1e-5
+      buffer_size: 500000
+      gamma: 0.995
+
+    coordination:
+      task_allocator:
+        strategy: 'priority_aware'
+        reallocation_frequency: 30
+      communication:
+        enabled: true
+        communication_range: 50.0
+      battery_manager:
+        enable_proactive_charging: true
+        charging_threshold: 25.0
+      scheduler:
+        policy: 'priority'
+
+    rewards:
+      task_completion: 25.0
+      task_completion_bonus: 10.0
+      coordination_bonus: 5.0
+      collision_penalty: -15.0
+      battery_critical_penalty: -30.0
+
+  # Adaptive curriculum parameters
+  adaptive:
+    enabled: true
+    performance_threshold: 0.80
+    patience: 20000
+
+    # Performance metrics to track
+    metrics:
+      - 'task_success_rate'
+      - 'avg_reward'
+      - 'collision_rate'
+      - 'fleet_utilization'
+
+    # Stage transition criteria
+    transitions:
+      early_transition: true
+      early_transition_threshold: 0.95
+      delayed_transition: true
+      delayed_transition_patience: 50000
+
+# Curriculum learning strategies
+strategies:
+
+  # Difficulty progression
+  difficulty_progression:
+    dimensions:
+      - 'fleet_size'
+      - 'environment_complexity'
+      - 'task_density'
+      - 'task_deadlines'
+      - 'battery_constraints'
+
+  # Learning rate scheduling across stages
+  learning_rate_schedule:
+    initial: 3e-4
+    final: 1e-5
+    decay_type: 'exponential'
+    decay_steps: 1300000
+
+  # Reward shaping during curriculum
+  reward_shaping:
+    include_progress_bonus: true
+    include_milestone_rewards: true
+    scale_with_difficulty: true
+
+# Performance tracking and early stopping
+performance:
+  track_metrics:
+    - 'episode_reward'
+    - 'task_success_rate'
+    - 'collision_rate'
+    - 'battery_efficiency'
+
+  early_stopping:
+    enabled: true
+    patience: 30000
+    threshold: 0.90
+
+  save_best_per_stage: true
