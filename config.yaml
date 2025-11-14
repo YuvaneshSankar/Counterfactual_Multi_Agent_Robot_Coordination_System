@@ -1,0 +1,452 @@
+# ============================================================================
+# COMAR - Complete Configuration File
+# Counterfactual Multi-Agent Robot Coordination System
+# All hyperparameters, environment settings, and training configuration
+# ============================================================================
+
+# ============================================================================
+# ENVIRONMENT CONFIGURATION
+# ============================================================================
+environment:
+  # Warehouse dimensions
+  warehouse_size:
+    width: 100.0
+    height: 80.0
+
+  # Robot fleet
+  num_robots: 5
+  max_episode_steps: 2000
+  render: false
+
+  # Task generation
+  task:
+    arrival_rate: 0.3          # Poisson arrival rate (tasks per step)
+    max_pending: 50            # Maximum pending tasks in queue
+    priority_range: [1, 10]    # Priority distribution
+    deadline_range: [100, 500] # Task deadline in steps
+    distribution: 'poisson'    # Task arrival distribution
+
+  # Robot specifications
+  robot:
+    radius: 0.5                # Collision radius (meters)
+    mass: 50.0                 # Robot mass (kg)
+    max_linear_velocity: 2.0   # Max forward speed (m/s)
+    max_angular_velocity: 3.14 # Max rotation speed (rad/s)
+    acceleration: 1.0          # Linear acceleration (m/s^2)
+
+    # Battery management
+    battery_capacity: 100.0
+    battery_discharge_rate: 0.05  # Per unit velocity
+    battery_charge_rate: 0.3       # At charging station
+    battery_critical_threshold: 10.0
+    battery_charge_threshold: 30.0
+
+    # Kinematics
+    wheelbase: 0.4             # Distance between wheels
+    wheel_radius: 0.1          # Wheel radius
+
+  # Warehouse layout
+  obstacles:
+    num_shelves: 8
+    shelf_width: 3.0
+    shelf_height: 2.0
+    shelf_depth: 1.5
+    aisle_width: 5.0
+    shelves_per_row: 4
+
+  charging_stations: 2
+  delivery_zones: 3
+
+  # Physics simulation
+  physics:
+    dt: 0.01                   # Time step (seconds)
+    gravity: 9.81              # Gravity (m/s^2)
+    substeps: 5                # Physics substeps per simulation step
+    friction: 0.5              # Ground friction
+    use_fixed_base: true       # Fix robots to ground
+
+  # Rendering
+  render_mode: 'human'         # 'human' or 'rgb_array'
+  camera:
+    distance: 150.0
+    yaw: 0.0
+    pitch: -60.0
+
+  # Seed for reproducibility
+  seed: 42
+
+# ============================================================================
+# OBSERVATION & ACTION CONFIGURATION
+# ============================================================================
+observation:
+  # Components
+  include_position: true
+  include_velocity: true
+  include_battery: true
+  include_task_info: true
+  include_relative_robots: true
+  include_lidar: true
+
+  # LiDAR sensor
+  lidar:
+    num_beams: 16
+    max_range: 20.0
+    field_of_view: 360        # degrees
+    angular_resolution: 22.5  # degrees per beam
+
+  # Normalization
+  normalize: true
+  observation_min: -1.0
+  observation_max: 1.0
+
+  # Observation components dimensions
+  dims:
+    position: 2               # (x, y)
+    velocity: 2               # (vx, vy)
+    battery: 1                # Battery level
+    task_info: 4              # (task_x, task_y, priority, deadline)
+    relative_robots: 6        # 3 nearest robots (2D pos each)
+    lidar: 16                 # 16 beams
+
+action:
+  # Action space
+  action_dim: 2
+  action_type: 'continuous'
+  action_bounds: [-1.0, 1.0]
+  action_clip: 1.0
+
+  # Action interpretation
+  action_meaning:
+    - 'linear_velocity'       # action[0]
+    - 'angular_velocity'      # action[1]
+
+  # Squashing for bounded actions
+  squashing: true
+  squashing_function: 'tanh'
+
+# ============================================================================
+# ALGORITHM CONFIGURATION (COMA - Continuous)
+# ============================================================================
+algorithm:
+  name: 'coma_continuous'
+  type: 'policy_gradient'
+  framework: 'pytorch'
+
+  # Actor network architecture
+  actor:
+    hidden_dims: [256, 256]
+    activation: 'relu'
+    output_activation: 'tanh'
+    initialization: 'orthogonal'
+    std_init: -0.5
+    std_min: 0.01
+    std_max: 1.0
+
+  # Critic network architecture
+  critic:
+    hidden_dims: [256, 256]
+    activation: 'relu'
+    output_activation: 'linear'
+    initialization: 'orthogonal'
+
+  # Learning rates
+  actor_lr: 3e-4
+  critic_lr: 3e-4
+  lr_schedule: 'constant'    # 'constant', 'linear_decay', 'exponential'
+  lr_decay_steps: 1000000
+  lr_final_factor: 0.1
+
+  # Optimizer
+  optimizer: 'adam'
+  optimizer_kwargs:
+    eps: 1e-8
+    weight_decay: 0.0
+
+  # Discount factor and advantage
+  gamma: 0.99
+  gae_lambda: 0.95           # GAE smoothing parameter
+
+  # Target network update
+  tau: 0.005                 # Soft update coefficient
+  update_target_every: 1     # Update target every N steps
+
+  # Gradient handling
+  max_grad_norm: 0.5
+  gradient_clipping: true
+
+  # Replay buffer
+  buffer_size: 100000
+  prioritized_experience_replay: false
+  per_alpha: 0.6
+  per_beta: 0.4
+  per_beta_increment: 1e-5
+
+  # Entropy regularization
+  entropy_regularization: false
+  entropy_coefficient: 0.01
+  target_entropy: null       # Auto-calculated if null
+
+  # Loss scaling
+  value_loss_coefficient: 0.5
+  policy_loss_coefficient: 1.0
+
+# ============================================================================
+# TRAINING CONFIGURATION
+# ============================================================================
+training:
+  # Duration
+  total_timesteps: 1000000
+  num_envs: 1
+
+  # Data collection
+  rollout_steps: 2000
+  collect_with_policy: true
+
+  # Batch and epoch parameters
+  batch_size: 64
+  num_epochs: 10
+  num_updates_per_rollout: 4
+
+  # Learning schedule
+  learning_rate_schedule: 'constant'
+  warmup_steps: 0
+
+  # Evaluation
+  eval_frequency: 5000
+  eval_episodes: 10
+  eval_deterministic: true
+  eval_render: false
+
+  # Checkpointing
+  checkpoint_frequency: 10000
+  save_best_model: true
+  best_model_criterion: 'reward'  # 'reward', 'success_rate'
+  keep_last_n_checkpoints: 5
+
+  # Early stopping
+  early_stopping: false
+  early_stopping_patience: 50
+  early_stopping_threshold: 0.95
+
+  # Logging
+  log_frequency: 100
+  log_gradients: false
+  log_histograms: false
+
+  # Random seed
+  seed: 42
+
+# ============================================================================
+# CURRICULUM LEARNING
+# ============================================================================
+curriculum:
+  enabled: true
+  type: 'progressive_difficulty'  # 'progressive_difficulty', 'adaptive'
+
+  stages:
+    stage1:
+      name: 'Easy'
+      duration: 200000
+      num_robots: 2
+      task_arrival_rate: 0.1
+      warehouse_complexity: 'simple'
+      observation_range: 40.0
+
+    stage2:
+      name: 'Medium'
+      duration: 400000
+      num_robots: 5
+      task_arrival_rate: 0.3
+      warehouse_complexity: 'moderate'
+      observation_range: 30.0
+
+    stage3:
+      name: 'Hard'
+      duration: 400000
+      num_robots: 10
+      task_arrival_rate: 0.5
+      warehouse_complexity: 'complex'
+      observation_range: 25.0
+
+  # Adaptive curriculum
+  adaptive:
+    enabled: false
+    performance_threshold: 0.85
+    patience: 10000
+    metric: 'mean_reward'
+
+# ============================================================================
+# REWARD CONFIGURATION
+# ============================================================================
+rewards:
+  # Task completion
+  task_completion: 10.0
+  task_completion_bonus: 5.0
+
+  # Time penalties
+  time_step_penalty: -0.01
+  idle_penalty: -0.05
+
+  # Efficiency
+  distance_efficiency: 0.1
+
+  # Safety
+  collision_penalty: -5.0
+  obstacle_collision_penalty: -10.0
+  battery_critical_penalty: -20.0
+
+  # Coordination
+  coordination_bonus: 1.0
+
+  # Normalization
+  reward_scale: 1.0
+  reward_clip: [-50, 50]
+
+  # Shaping
+  include_potential_based_shaping: false
+
+# ============================================================================
+# COORDINATION CONFIGURATION
+# ============================================================================
+coordination:
+  # Task allocation
+  task_allocator:
+    strategy: 'priority_aware'  # 'greedy_nearest', 'load_balanced', 'priority_aware'
+    reallocation_allowed: true
+    reallocation_frequency: 100
+    max_tasks_per_robot: 1
+
+  # Path planning
+  path_planner:
+    algorithm: 'astar'          # 'astar', 'dijkstra', 'rrt'
+    grid_resolution: 1.0
+    use_path_smoothing: true
+    smoothing_iterations: 10
+    path_timeout: 1000          # Max steps to find path
+
+  # Battery management
+  battery_manager:
+    enable_proactive_charging: true
+    charging_threshold: 30.0
+    critical_threshold: 10.0
+    charging_priority: 'low_battery_first'  # 'low_battery_first', 'distance_first'
+
+  # Communication
+  communication:
+    enabled: true
+    communication_range: 30.0
+    max_messages_per_robot: 100
+    message_latency: 0          # Steps delay
+    broadcast_enabled: true
+
+  # Scheduling
+  scheduler:
+    policy: 'priority'          # 'fifo', 'priority', 'edf', 'llf'
+    preemption_allowed: false
+    deadline_strict: false
+    max_queue_size: 50
+
+# ============================================================================
+# OBSERVATION PREPROCESSING
+# ============================================================================
+preprocessing:
+  normalize_observations: true
+  observation_min_value: -1.0
+  observation_max_value: 1.0
+  use_running_mean_std: false
+  epsilon: 1e-8
+
+  # State clipping
+  clip_observations: true
+  observation_clip_min: -5.0
+  observation_clip_max: 5.0
+
+# ============================================================================
+# LOGGING & MONITORING
+# ============================================================================
+logging:
+  # Directories
+  log_dir: 'results/logs'
+  checkpoint_dir: 'results/checkpoints'
+  video_dir: 'results/videos'
+  metrics_dir: 'results/metrics'
+
+  # Logging level
+  level: 'INFO'               # 'DEBUG', 'INFO', 'WARNING', 'ERROR'
+
+  # TensorBoard
+  tensorboard:
+    enabled: true
+    log_frequency: 100
+    log_histograms: false
+    log_gradients: false
+    log_weights: false
+
+  # Metrics
+  metrics:
+    - 'episode_reward'
+    - 'actor_loss'
+    - 'critic_loss'
+    - 'task_success_rate'
+    - 'collision_rate'
+    - 'battery_efficiency'
+    - 'fleet_utilization'
+    - 'mean_episode_length'
+
+  # Video recording
+  record_videos: false
+  video_frequency: 0          # 0 = don't record
+  video_length: 500
+
+# ============================================================================
+# DEVICE & HARDWARE
+# ============================================================================
+device:
+  device_type: 'cuda'         # 'cuda', 'cpu'
+  device_id: 0
+
+  # Performance optimization
+  num_workers: 4
+  pin_memory: true
+  mixed_precision: false      # Automatic mixed precision
+
+  # Memory
+  gradient_accumulation_steps: 1
+  accumulate_gradients: false
+
+# ============================================================================
+# REPRODUCIBILITY
+# ============================================================================
+reproducibility:
+  seed: 42
+  deterministic: true
+  benchmark: false            # cuDNN deterministic mode
+
+# ============================================================================
+# EXPERIMENT METADATA
+# ============================================================================
+experiment:
+  name: 'COMAR_Default'
+  description: 'Default COMAR configuration for warehouse robot coordination'
+  tags:
+    - 'coma'
+    - 'continuous_actions'
+    - 'warehouse'
+    - 'multi-agent'
+  author: 'COMAR Team'
+  version: '1.0'
+  date_created: '2025-11-15'
+
+# ============================================================================
+# DEBUGGING & VALIDATION
+# ============================================================================
+debug:
+  verbose: false
+  check_nan_inf: true
+  validate_observations: true
+  validate_actions: true
+
+  # Logging details
+  log_episode_transitions: false
+  log_network_weights: false
+  log_agent_actions: false
