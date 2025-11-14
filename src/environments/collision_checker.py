@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 class CollisionChecker:
     """
     Spatial collision detection for multi-robot systems.
-
+ 
     Supports:
     - Robot-robot collisions
     - Robot-obstacle collisions

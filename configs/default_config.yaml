@@ -1,0 +1,332 @@
+# COMAR Default Configuration
+# Counterfactual Multi-Agent Robot Coordination System
+# Complete hyperparameter configuration for training
+
+# ============================================================================
+# ENVIRONMENT CONFIGURATION
+# ============================================================================
+environment:
+  # Warehouse dimensions
+  warehouse_size:
+    width: 100.0
+    height: 80.0
+
+  # Number of robots in the system
+  num_robots: 5
+
+  # Episode parameters
+  max_episode_steps: 2000
+  render: false
+  render_mode: 'human'  # 'human' or 'rgb_array'
+
+  # Task generation
+  task_arrival_rate: 0.3  # Tasks per step
+  max_pending_tasks: 50
+  task_priority_range: [1, 10]
+  task_deadline_range: [100, 500]
+
+  # Robot parameters
+  robot:
+    radius: 0.5
+    mass: 50.0
+    max_linear_velocity: 2.0
+    max_angular_velocity: 3.14159
+    battery_capacity: 100.0
+    battery_discharge_rate: 0.05  # Per unit velocity
+    battery_charge_rate: 0.3
+    battery_critical_threshold: 10.0
+    battery_charge_threshold: 30.0
+
+  # Physics parameters
+  physics:
+    gravity: 9.81
+    dt: 0.01
+    substeps: 5
+    friction: 0.5
+
+  # Obstacle configuration
+  obstacles:
+    num_shelves: 8
+    shelf_width: 3.0
+    shelf_height: 2.0
+    aisle_width: 5.0
+
+  # Charging and delivery zones
+  charging_stations: 2
+  delivery_zones: 3
+
+# ============================================================================
+# ALGORITHM CONFIGURATION
+# ============================================================================
+algorithm:
+  # COMA algorithm parameters
+  algorithm_type: 'coma_continuous'
+
+  # Network architectures
+  actor:
+    hidden_dims: [256, 256]
+    activation: 'relu'
+    output_activation: 'tanh'
+    std_init: -0.5
+
+  critic:
+    hidden_dims: [256, 256]
+    activation: 'relu'
+    output_activation: 'linear'
+
+  # Learning rates
+  actor_lr: 3e-4
+  critic_lr: 3e-4
+  optimizer: 'adam'
+
+  # Discount factors
+  gamma: 0.99
+  gae_lambda: 0.95
+  tau: 0.005  # Soft update coefficient
+
+  # Gradient clipping
+  max_grad_norm: 0.5
+
+  # Replay buffer
+  buffer_size: 100000
+  prioritized_experience_replay: false
+  per_alpha: 0.6
+  per_beta: 0.4
+  per_beta_increment: 1e-5
+
+  # Action space
+  action_clip: 1.0
+  action_squashing: true
+
+  # Entropy regularization
+  use_entropy_regularization: false
+  entropy_coefficient: 0.01
+  target_entropy: null  # Auto-calculated if null
+
+# ============================================================================
+# TRAINING CONFIGURATION
+# ============================================================================
+training:
+  # Training duration
+  total_timesteps: 1000000
+  num_envs: 1
+  rollout_steps: 2000
+
+  # Batch parameters
+  batch_size: 64
+  num_epochs: 10
+  num_updates_per_rollout: 4
+
+  # Learning schedule
+  learning_rate_schedule: 'constant'  # 'constant', 'linear_decay', 'exponential'
+  lr_decay_steps: 1000000
+
+  # Evaluation
+  eval_frequency: 5000
+  eval_episodes: 10
+  eval_deterministic: true
+
+  # Checkpointing
+  checkpoint_frequency: 10000
+  save_best_model: true
+  best_model_criterion: 'reward'  # 'reward', 'success_rate'
+
+  # Early stopping
+  early_stopping: false
+  early_stopping_patience: 50
+  early_stopping_threshold: 0.95
+
+  # Logging
+  log_frequency: 100
+  log_gradients: false
+  log_histograms: false
+
+# ============================================================================
+# CURRICULUM LEARNING
+# ============================================================================
+curriculum:
+  enabled: true
+  type: 'progressive_difficulty'  # 'progressive_difficulty', 'adaptive'
+
+  stages:
+    stage1:
+      name: 'Easy'
+      duration: 200000
+      num_robots: 2
+      task_arrival_rate: 0.1
+      warehouse_complexity: 'simple'
+      agent_observation_range: 40.0
+
+    stage2:
+      name: 'Medium'
+      duration: 400000
+      num_robots: 5
+      task_arrival_rate: 0.3
+      warehouse_complexity: 'moderate'
+      agent_observation_range: 30.0
+
+    stage3:
+      name: 'Hard'
+      duration: 400000
+      num_robots: 10
+      task_arrival_rate: 0.5
+      warehouse_complexity: 'complex'
+      agent_observation_range: 25.0
+
+  # Adaptive curriculum parameters
+  adaptive:
+    enabled: false
+    performance_threshold: 0.85
+    patience: 10000
+
+# ============================================================================
+# REWARD CONFIGURATION
+# ============================================================================
+rewards:
+  # Task completion rewards
+  task_completion: 10.0
+  task_completion_bonus: 5.0  # Bonus for completing early
+
+  # Time penalties
+  time_step_penalty: -0.01
+  idle_penalty: -0.05
+
+  # Efficiency rewards
+  distance_efficiency: 0.1  # Reward for short paths
+
+  # Safety penalties
+  collision_penalty: -5.0
+  obstacle_collision_penalty: -10.0
+  battery_critical_penalty: -20.0
+
+  # Cooperation rewards
+  coordination_bonus: 1.0  # Bonus for good coordination
+
+  # Normalization
+  reward_scale: 1.0
+  reward_clip: [-50, 50]
+
+# ============================================================================
+# COORDINATION CONFIGURATION
+# ============================================================================
+coordination:
+  # Task allocation
+  task_allocator:
+    strategy: 'priority_aware'  # 'greedy_nearest', 'load_balanced', 'priority_aware'
+    reallocation_allowed: true
+    reallocation_frequency: 100
+
+  # Path planning
+  path_planner:
+    algorithm: 'astar'  # 'astar', 'dijkstra', 'rrt'
+    grid_resolution: 1.0
+    use_path_smoothing: true
+    smoothing_iterations: 10
+
+  # Battery management
+  battery_manager:
+    enable_proactive_charging: true
+    charging_threshold: 30.0
+    critical_threshold: 10.0
+    charging_priority: 'low_battery_first'
+
+  # Communication
+  communication:
+    enabled: true
+    communication_range: 30.0
+    max_messages_per_robot: 100
+    message_latency: 0  # Steps
+
+  # Scheduling
+  scheduler:
+    policy: 'priority'  # 'fifo', 'priority', 'edf', 'llf'
+    preemption_allowed: false
+    deadline_strict: false
+
+# ============================================================================
+# OBSERVATION CONFIGURATION
+# ============================================================================
+observation:
+  # Agent observation components
+  include_position: true
+  include_velocity: true
+  include_battery: true
+  include_task_info: true
+  include_relative_robots: true
+  include_lidar: true
+
+  # LiDAR parameters
+  lidar:
+    num_beams: 16
+    max_range: 20.0
+    field_of_view: 360
+
+  # Observation normalization
+  normalize_observations: true
+  observation_min: -1.0
+  observation_max: 1.0
+
+# ============================================================================
+# LOGGING AND VISUALIZATION
+# ============================================================================
+logging:
+  # Directories
+  log_dir: 'results/logs'
+  checkpoint_dir: 'results/checkpoints'
+  video_dir: 'results/videos'
+  metrics_dir: 'results/metrics'
+
+  # Logging level
+  level: 'INFO'  # 'DEBUG', 'INFO', 'WARNING', 'ERROR'
+
+  # TensorBoard logging
+  tensorboard:
+    enabled: true
+    log_frequency: 100
+    log_histograms: false
+    log_gradients: false
+
+  # Metrics to log
+  metrics:
+    - 'episode_reward'
+    - 'actor_loss'
+    - 'critic_loss'
+    - 'task_success_rate'
+    - 'collision_rate'
+    - 'battery_efficiency'
+    - 'fleet_utilization'
+
+# ============================================================================
+# DEVICE AND PERFORMANCE
+# ============================================================================
+device:
+  # Device selection
+  device_type: 'cuda'  # 'cuda', 'cpu'
+  device_id: 0
+
+  # Performance optimization
+  num_workers: 4
+  pin_memory: true
+  mixed_precision: false
+
+  # Memory optimization
+  gradient_accumulation_steps: 1
+  accumulate_gradients: false
+
+# ============================================================================
+# RANDOM SEED AND REPRODUCIBILITY
+# ============================================================================
+reproducibility:
+  seed: 42
+  deterministic: true
+  benchmark: false
+
+# ============================================================================
+# EXPERIMENT METADATA
+# ============================================================================
+experiment:
+  name: 'COMAR_Default'
+  description: 'Default COMAR configuration for warehouse robot coordination'
+  tags: ['coma', 'continuous_actions', 'warehouse', 'multi-agent']
+  author: 'COMAR Team'
+  version: '1.0'
