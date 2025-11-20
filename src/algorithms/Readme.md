@@ -4,8 +4,7 @@ This directory contains the core reinforcement learning algorithms used in the C
 
 ---
 
-## Actor Network
-
+## 1) Actor Network
 The **Actor Network** implements a Gaussian policy network for continuous action spaces. It takes an **observation vector** as input and outputs action distributions.
 
 ### Input: Observation Vector
@@ -97,3 +96,18 @@ action[1] = -0.3 + 0.135 × (-1.2) = -0.462
 ```
 
 These are the velocity results for the robot.
+
+---
+
+### Network Architecture
+
+Now let's talk about the architecture of the actor network:
+
+| Layer | Configuration | Parameters |
+|-------|--------------|------------|
+| **FC1** | 35 → 256 with ReLU | 9,216 params |
+| **FC2** | 256 → 256 with ReLU | 65,792 params |
+| **Mean Head** | 256 → 2 with Tanh | 514 params |
+| **Log-Std Head** | 256 → 2 with Clamp | 514 params |
+
+**Note:** We use L2 regularization loss so the network won't overfit.
