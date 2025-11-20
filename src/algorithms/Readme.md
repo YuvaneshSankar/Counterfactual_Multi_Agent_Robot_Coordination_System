@@ -45,3 +45,55 @@ The observation is a **35-dimensional float array** containing all information c
 
 **Total: 35 dimensions** (2 + 2 + 1 + 6 + 2 + 6 + 16)
 
+
+---
+
+### Output: Action Space
+
+Now let's talk about the outputs:
+
+Each actor network will output **linear velocity** (forward/backward speed) and **angular velocity** (rotation speed).
+
+The actor network's job is to produce commands that control the robot's movement in a smooth, continuous way by specifying how fast to move forward and how fast to turn, based on its local observation input.
+
+---
+
+### Network Heads
+
+Now let's discuss the two heads we have here:
+
+#### 1. Mean Head
+The normal Mean head gives the 2 outputs that we discussed above.
+
+**Example mean output:** `[0.8, -0.3]`
+
+#### 2. Log-Std Head
+The Log-Std head basically says **"How sure I am"**.
+
+**Example log-std output:** `[-1.5, -2.0]`
+
+We take exponential values of these since they are standard deviations and they shouldn't be negative:
+
+```
+exp([-1.5, -2.0]) = [0.223, 0.135]
+```
+
+This means: **"Add ±0.223 randomness to forward, ±0.135 to turning"**
+
+---
+
+### Action Sampling
+
+Then the magic happens:
+
+```
+action = mean + std × random_noise
+```
+
+**Example:**
+```
+action[0] = 0.8 + 0.223 × 0.5 = 0.912
+action[1] = -0.3 + 0.135 × (-1.2) = -0.462
+```
+
+These are the velocity results for the robot.
