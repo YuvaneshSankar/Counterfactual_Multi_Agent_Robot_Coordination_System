@@ -10,12 +10,7 @@ logger = logging.getLogger(__name__)
 
 
 class ReplayBuffer:
-    """
-    Experience Replay Buffer for Multi-Agent Reinforcement Learning.
 
-    Stores transitions and allows efficient batch sampling for training.
-    Implements circular buffer to maintain fixed memory footprint.
-    """
 
     def __init__(
         self,
@@ -26,17 +21,7 @@ class ReplayBuffer:
         obs_dim: int,
         device: torch.device = torch.device('cpu'),
     ):
-        """
-        Initialize replay buffer.
 
-        Args:
-            buffer_size: Maximum number of transitions to store
-            state_dim: Dimension of global state
-            action_dim: Dimension of single agent action
-            num_agents: Number of agents
-            obs_dim: Dimension of agent observation
-            device: PyTorch device
-        """
         self.buffer_size = buffer_size
         self.state_dim = state_dim
         self.action_dim = action_dim
@@ -46,14 +31,13 @@ class ReplayBuffer:
         self.position = 0  # Current position in circular buffer
         self.is_full = False  # Whether buffer has wrapped around
 
-        # Allocate memory for circular buffers
         self.states = np.zeros((buffer_size, state_dim), dtype=np.float32)
         self.next_states = np.zeros((buffer_size, state_dim), dtype=np.float32)
         self.actions = np.zeros((buffer_size, num_agents, action_dim), dtype=np.float32)
         self.rewards = np.zeros(buffer_size, dtype=np.float32)
         self.dones = np.zeros(buffer_size, dtype=np.bool_)
 
-        # Observations for each agent (used for decentralized execution)
+
         self.observations = [
             np.zeros((buffer_size, obs_dim), dtype=np.float32)
             for _ in range(num_agents)
@@ -78,18 +62,7 @@ class ReplayBuffer:
         next_observations: List[np.ndarray],
         done: bool,
     ):
-        """
-        Add a transition to the replay buffer.
 
-        Args:
-            state: Global state [state_dim]
-            observations: Per-agent observations [List of obs_dim]
-            actions: Joint actions [num_agents, action_dim]
-            reward: Scalar reward
-            next_state: Next global state [state_dim]
-            next_observations: Next per-agent observations
-            done: Episode termination flag
-        """
         # Store in circular buffer at current position
         idx = self.position
 
@@ -118,16 +91,7 @@ class ReplayBuffer:
         rewards: np.ndarray,
         dones: np.ndarray,
     ):
-        """
-        Add a complete episode trajectory to the buffer.
 
-        Args:
-            states: State trajectory [episode_length, state_dim]
-            observations: Observation trajectories [num_agents, episode_length, obs_dim]
-            actions: Action trajectory [episode_length, num_agents, action_dim]
-            rewards: Reward trajectory [episode_length]
-            dones: Done flags [episode_length]
-        """
         episode_length = states.shape[0]
 
         for t in range(episode_length):
@@ -147,17 +111,7 @@ class ReplayBuffer:
         batch_size: int,
         strategy: str = 'uniform'
     ) -> Dict[str, torch.Tensor]:
-        """
-        Sample a batch of transitions from the buffer.
 
-        Args:
-            batch_size: Number of transitions to sample
-            strategy: Sampling strategy ('uniform', 'recent', 'prioritized')
-
-        Returns:
-            batch: Dictionary with sampled transitions as torch tensors
-        """
-        # Determine valid indices
         if self.is_full:
             valid_size = self.buffer_size
         else:
@@ -170,18 +124,15 @@ class ReplayBuffer:
             )
             batch_size = valid_size
 
-        # Sample indices based on strategy
         if strategy == 'uniform':
             indices = np.random.choice(valid_size, batch_size, replace=False)
         elif strategy == 'recent':
-            # Bias towards recent samples
             weights = np.linspace(0.1, 1.0, valid_size)
             weights = weights / weights.sum()
             indices = np.random.choice(valid_size, batch_size, p=weights, replace=False)
         else:
             raise ValueError(f"Unknown sampling strategy: {strategy}")
 
-        # Extract batch
         batch = {
             'states': torch.FloatTensor(self.states[indices]).to(self.device),
             'next_states': torch.FloatTensor(self.next_states[indices]).to(self.device),
@@ -205,26 +156,13 @@ class ReplayBuffer:
         num_episodes: int,
         min_episode_length: int = 10,
     ) -> Dict[str, torch.Tensor]:
-        """
-        Sample complete episodes from the buffer.
 
-        Useful for computing long-horizon returns and advantages.
-
-        Args:
-            num_episodes: Number of episodes to sample
-            min_episode_length: Minimum episode length to sample
-
-        Returns:
-            episodes: Dictionary with episode trajectories
-        """
-        # Find episode boundaries (where done=True)
         done_indices = np.where(self.dones[:self.position if not self.is_full else self.buffer_size])[0]
 
         if len(done_indices) < num_episodes:
             logger.warning(f"Only {len(done_indices)} episodes in buffer, requested {num_episodes}")
             num_episodes = len(done_indices)
 
-        # Sample episode indices
         episode_starts = [0] + list((done_indices + 1) % self.buffer_size)
         valid_episodes = []
 
@@ -240,7 +178,6 @@ class ReplayBuffer:
             logger.warning("No valid episodes found")
             return self.sample(batch_size=min_episode_length)
 
-        # Sample episodes
         sampled_episodes = np.random.choice(len(valid_episodes), num_episodes, replace=True)
 
         episodes = {
@@ -262,7 +199,6 @@ class ReplayBuffer:
             episodes['rewards'].append(self.rewards[indices])
             episodes['dones'].append(self.dones[indices])
 
-        # Convert to tensors
         max_length = max(e.shape[0] for e in episodes['states'])
 
         padded_states = np.zeros((num_episodes, max_length, self.state_dim))
@@ -289,17 +225,14 @@ class ReplayBuffer:
         }
 
     def __len__(self) -> int:
-        """Return current size of buffer."""
         return self.buffer_size if self.is_full else self.position
 
     def clear(self):
-        """Clear the replay buffer."""
         self.position = 0
         self.is_full = False
         logger.info("Replay buffer cleared")
 
     def get_statistics(self) -> Dict:
-        """Get statistics about the buffer contents."""
         valid_size = self.buffer_size if self.is_full else self.position
 
         if valid_size == 0:
