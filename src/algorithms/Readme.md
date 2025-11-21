@@ -155,3 +155,53 @@ To extract richer features from the simple 10D action input.
 ✅ **Training:** Critic sees everything (centralized)
 
 ✅ **Execution:** Each actor is independent (decentralized)
+
+
+---
+
+## 3) COMA for Continuous Action Space
+
+### Overview
+
+First, we collect all actions and states from all robots and concatenate them. Then we need to find the baseline Q-values for all robots/agents.
+
+---
+
+### Baseline Advantage Calculation
+
+This is the **major difference** between most MARL algorithms and COMA.
+
+#### Algorithm Steps:
+
+1. **Compute Joint Action Q-Value**
+   - Take the concatenated states and actions
+   - Get the joint action Q-value from the critic network
+
+2. **Sample Counterfactual Actions (for each agent *i*)**
+   - Set empirical value: `num_samples = 10`
+   - Loop through each robot/agent *i*:
+     - Pass the global concatenated states to agent *i*'s policy
+     - Get a new action for agent *i*
+     - Replace agent *i*'s action in the concatenated action space
+     - Compute Q-value for this new updated action space
+     - Repeat this `num_samples` times and find the **average Q-value**
+
+3. **Calculate Advantage**
+   - Advantage(*i*) = Joint Action Q-value - Average Counterfactual Q-value
+   - This gives the advantage of agent *i*
+   - Repeat for every agent
+
+---
+
+### Training Process
+
+**Advantage Smoothing:**
+- We use **GAE (Generalized Advantage Estimation)** to smooth the advantage values
+
+**Network Updates:**
+
+| Network | Update Method |
+|---------|---------------|
+| **Actor Network** | Policy gradient: `∇ log π(a) × Advantage` |
+| **Critic Network** | MSE loss: `(Q_predicted - Q_target)²` |
+| **Target Network** | Soft update: `θ_target ← τ × θ + (1 - τ) × θ_target` |

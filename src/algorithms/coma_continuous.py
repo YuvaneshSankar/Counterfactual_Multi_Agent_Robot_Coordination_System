@@ -36,7 +36,6 @@ class COMAcontinuous:
         self.state_dim = state_dim
         self.device = device
 
-        # Hyperparameters from config
         self.actor_lr = config.get('actor_learning_rate', 3e-4)
         self.critic_lr = config.get('critic_learning_rate', 1e-3)
         self.discount_factor = config.get('discount_factor', 0.99)
@@ -45,15 +44,14 @@ class COMAcontinuous:
         self.gradient_clip = config.get('gradient_clip_norm', 0.5)
         self.normalize_advantages = config.get('normalize_advantages', True)
 
-        # Optimizers
         self.actor_optimizer = optim.Adam(self.actor_network.parameters(), lr=self.actor_lr)
         self.critic_optimizer = optim.Adam(self.critic_network.parameters(), lr=self.critic_lr)
 
-        # Target critic network for stable training (soft update)
+
         self.target_critic_network = critic_network.clone_network().to(device)
         self.tau = config.get('tau', 0.005)
 
-        # Training statistics
+
         self.total_steps = 0
         self.total_updates = 0
 
