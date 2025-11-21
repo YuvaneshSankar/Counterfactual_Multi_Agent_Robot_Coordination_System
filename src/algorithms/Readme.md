@@ -111,3 +111,47 @@ Now let's talk about the architecture of the actor network:
 | **Log-Std Head** | 256 → 2 with Clamp | 514 params |
 
 **Note:** We use L2 regularization loss so the network won't overfit.
+
+---
+
+## 2) Critic Network
+
+### Inputs to the Critic Network
+
+The critic network receives:
+
+| Input | Dimensions | Description |
+|-------|------------|-------------|
+| **Global State** | 175D | ALL robots' observations concatenated |
+| **Joint Actions** | 10D | ALL robots' actions concatenated |
+
+---
+
+### Network Architecture
+
+#### Step 1: Encoding Both Inputs
+
+| Encoder | Configuration | Purpose |
+|---------|--------------|---------|
+| **State Encoder** | 175 → 256 | Processes observations |
+| **Action Encoder** | 10 → 128 | Processes actions |
+
+**Why encode actions from 10 → 128?**
+To extract richer features from the simple 10D action input.
+
+#### Step 2: Processing
+
+| Layer | Configuration | Description |
+|-------|--------------|-------------|
+| **Concatenation** | 256 + 128 → 384 | Combine state and action encodings |
+| **FC1** | 384 → 256 | First fully connected layer |
+| **FC2** | 256 → 256 | Second fully connected layer |
+| **Output** | 256 → 1 | Q-value prediction |
+
+---
+
+### Key Concept: Centralized Training, Decentralized Execution (CTDE)
+
+✅ **Training:** Critic sees everything (centralized)
+
+✅ **Execution:** Each actor is independent (decentralized)

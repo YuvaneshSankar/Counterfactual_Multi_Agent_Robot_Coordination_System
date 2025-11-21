@@ -1,6 +1,3 @@
-"""
-My main aim here is to implement COMA for a continuous action space.
-"""
 
 import torch
 import torch.nn.functional as F
