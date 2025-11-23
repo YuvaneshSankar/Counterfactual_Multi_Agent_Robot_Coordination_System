@@ -1,9 +1,4 @@
-"""
-Communication Module - Inter-Robot Message Passing
 
-Enables robots to share information about tasks, positions, and intentions.
-Implements message queues and broadcast protocols.
-"""
 
 import numpy as np
 from typing import List, Dict, Tuple, Optional
@@ -14,15 +9,7 @@ logger = logging.getLogger(__name__)
 
 
 class RobotCommunicationNetwork:
-    """
-    Communication network for multi-robot system.
 
-    Features:
-    - Message broadcasting
-    - Communication ranges
-    - Message queue management
-    - Latency simulation
-    """
 
     def __init__(
         self,
@@ -30,14 +17,7 @@ class RobotCommunicationNetwork:
         communication_range: float = 30.0,
         max_messages_per_robot: int = 100,
     ):
-        """
-        Initialize communication network.
 
-        Args:
-            num_robots: Number of robots
-            communication_range: Maximum communication distance
-            max_messages_per_robot: Max queued messages per robot
-        """
         self.num_robots = num_robots
         self.communication_range = communication_range
         self.max_messages = max_messages_per_robot
@@ -58,12 +38,7 @@ class RobotCommunicationNetwork:
         )
 
     def update_connectivity(self, robots: List):
-        """
-        Update communication connectivity based on robot positions.
 
-        Args:
-            robots: List of robot objects
-        """
         self.connectivity = {i: [] for i in range(self.num_robots)}
 
         for i in range(len(robots)):
@@ -83,14 +58,7 @@ class RobotCommunicationNetwork:
         message_type: str,
         payload: Dict,
     ):
-        """
-        Broadcast message to all connected robots.
 
-        Args:
-            sender_id: ID of sending robot
-            message_type: Type of message
-            payload: Message payload dictionary
-        """
         message = {
             'sender': sender_id,
             'type': message_type,
@@ -111,18 +79,7 @@ class RobotCommunicationNetwork:
         message_type: str,
         payload: Dict,
     ) -> bool:
-        """
-        Send direct message to specific robot.
 
-        Args:
-            sender_id: Sender robot ID
-            receiver_id: Receiver robot ID
-            message_type: Message type
-            payload: Message payload
-
-        Returns:
-            True if message sent successfully
-        """
         # Check if in communication range
         if receiver_id not in self.connectivity.get(sender_id, []):
             return False
@@ -142,16 +99,7 @@ class RobotCommunicationNetwork:
         return False
 
     def get_messages(self, robot_id: int, message_type: Optional[str] = None) -> List[Dict]:
-        """
-        Get all messages for a robot.
 
-        Args:
-            robot_id: Robot ID
-            message_type: Filter by message type (optional)
-
-        Returns:
-            List of messages
-        """
         messages = self.message_queues[robot_id]
 
         if message_type is not None:
@@ -164,12 +112,7 @@ class RobotCommunicationNetwork:
         self.message_queues[robot_id] = []
 
     def get_connectivity_matrix(self) -> np.ndarray:
-        """
-        Get communication connectivity matrix.
 
-        Returns:
-            Connectivity matrix (num_robots x num_robots)
-        """
         matrix = np.zeros((self.num_robots, self.num_robots), dtype=np.uint8)
 
         for i in range(self.num_robots):
@@ -202,20 +145,9 @@ class MessageTypes:
 
 
 class DecentralizedCoordinator:
-    """
-    Decentralized coordination using local communication.
 
-    Robots make decisions based on local information from nearby robots.
-    """
 
     def __init__(self, robot_id: int, communication_network: RobotCommunicationNetwork):
-        """
-        Initialize decentralized coordinator.
-
-        Args:
-            robot_id: This robot's ID
-            communication_network: Shared communication network
-        """
         self.robot_id = robot_id
         self.network = communication_network
 
