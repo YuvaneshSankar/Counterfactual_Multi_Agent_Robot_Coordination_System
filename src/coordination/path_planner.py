@@ -1,9 +1,3 @@
-"""
-Path Planner - Motion Planning for Warehouse Navigation
-
-Implements A* pathfinding with obstacle avoidance and trajectory planning.
-Computes collision-free paths through warehouse environment.
-"""
 
 import numpy as np
 from typing import List, Tuple, Dict, Optional
@@ -14,15 +8,7 @@ logger = logging.getLogger(__name__)
 
 
 class PathPlanner:
-    """
-    A* Path Planning Algorithm for warehouse navigation.
 
-    Features:
-    - Grid-based A* search
-    - Obstacle avoidance
-    - Heuristic-guided search
-    - Path smoothing
-    """
 
     def __init__(
         self,
@@ -31,15 +17,7 @@ class PathPlanner:
         grid_resolution: float = 1.0,
         robot_radius: float = 0.5,
     ):
-        """
-        Initialize path planner.
 
-        Args:
-            warehouse_width: Warehouse width
-            warehouse_height: Warehouse height
-            grid_resolution: Grid cell size for pathfinding
-            robot_radius: Robot collision radius
-        """
         self.width = warehouse_width
         self.height = warehouse_height
         self.grid_resolution = grid_resolution
@@ -66,17 +44,7 @@ class PathPlanner:
         goal: np.ndarray,
         warehouse_layout=None,
     ) -> Optional[List[np.ndarray]]:
-        """
-        Plan path from start to goal using A*.
 
-        Args:
-            start: Start position (x, y)
-            goal: Goal position (x, y)
-            warehouse_layout: Warehouse layout for obstacle checking
-
-        Returns:
-            Path as list of waypoints, or None if no path found
-        """
         # Build occupancy grid
         if warehouse_layout is not None:
             self._update_occupancy_grid(warehouse_layout)
@@ -109,12 +77,7 @@ class PathPlanner:
         return path
 
     def _update_occupancy_grid(self, warehouse_layout):
-        """
-        Update occupancy grid based on warehouse obstacles.
 
-        Args:
-            warehouse_layout: Warehouse layout
-        """
         self.occupancy_grid.fill(0)
 
         # Mark shelves as occupied
@@ -163,16 +126,7 @@ class PathPlanner:
         start: Tuple[int, int],
         goal: Tuple[int, int]
     ) -> Optional[List[Tuple[int, int]]]:
-        """
-        A* pathfinding algorithm.
 
-        Args:
-            start: Start grid cell
-            goal: Goal grid cell
-
-        Returns:
-            Path as list of grid cells, or None if no path
-        """
         # Priority queue: (f_score, counter, position)
         open_set = []
         counter = 0
@@ -229,16 +183,7 @@ class PathPlanner:
         return None  # No path found
 
     def _smooth_path(self, path: List[np.ndarray], max_iterations: int = 10) -> List[np.ndarray]:
-        """
-        Smooth path using line-of-sight shortcutting.
 
-        Args:
-            path: Original path
-            max_iterations: Maximum smoothing iterations
-
-        Returns:
-            Smoothed path
-        """
         if len(path) <= 2:
             return path
 
@@ -264,17 +209,7 @@ class PathPlanner:
         end: np.ndarray,
         num_samples: int = 20
     ) -> bool:
-        """
-        Check if straight path is collision-free.
 
-        Args:
-            start: Start position
-            end: End position
-            num_samples: Number of points to sample
-
-        Returns:
-            True if path is valid
-        """
         for t in np.linspace(0, 1, num_samples):
             point = start + t * (end - start)
             grid_pos = self._world_to_grid(point)
@@ -297,24 +232,14 @@ class PathPlanner:
 
 
 class TrajectoryPlanner:
-    """
-    Generate smooth robot trajectories with velocity profiles.
 
-    Produces time-parameterized trajectories with velocity and acceleration constraints.
-    """
 
     def __init__(
         self,
         max_velocity: float = 2.0,
         max_acceleration: float = 1.0,
     ):
-        """
-        Initialize trajectory planner.
 
-        Args:
-            max_velocity: Maximum robot velocity
-            max_acceleration: Maximum acceleration
-        """
         self.max_velocity = max_velocity
         self.max_acceleration = max_acceleration
 
@@ -323,16 +248,7 @@ class TrajectoryPlanner:
         path: List[np.ndarray],
         dt: float = 0.01,
     ) -> List[Dict]:
-        """
-        Generate time-parameterized trajectory from path.
 
-        Args:
-            path: List of waypoints
-            dt: Time step
-
-        Returns:
-            List of trajectory points with position, velocity
-        """
         trajectory = []
 
         for i, waypoint in enumerate(path):
