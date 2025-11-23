@@ -1,9 +1,4 @@
-"""
-Task Allocator - Centralized Task Assignment Algorithm
 
-Implements various task allocation strategies for multi-robot systems.
-Assigns pending tasks to robots based on availability, battery, and location.
-"""
 
 import numpy as np
 from typing import List, Dict, Tuple, Optional
@@ -13,28 +8,14 @@ logger = logging.getLogger(__name__)
 
 
 class TaskAllocator:
-    """
-    Centralized task allocation for multi-robot warehouse system.
 
-    Strategies:
-    1. Greedy nearest - Assign to nearest available robot
-    2. Load balanced - Assign considering current workload
-    3. Priority aware - Prioritize urgent tasks
-    4. Battery aware - Prefer robots with good battery
-    """
 
     def __init__(
         self,
         num_robots: int = 5,
         allocation_strategy: str = 'greedy_nearest',
     ):
-        """
-        Initialize task allocator.
 
-        Args:
-            num_robots: Number of robots in system
-            allocation_strategy: Strategy to use ('greedy_nearest', 'load_balanced', 'priority_aware')
-        """
         self.num_robots = num_robots
         self.allocation_strategy = allocation_strategy
 
@@ -51,17 +32,7 @@ class TaskAllocator:
         tasks: List[Tuple],
         warehouse_layout=None
     ) -> Dict[int, Optional[Tuple]]:
-        """
-        Allocate tasks to robots.
 
-        Args:
-            robots: List of robot objects
-            tasks: List of pending tasks
-            warehouse_layout: Warehouse layout for distance computation
-
-        Returns:
-            Dictionary mapping robot_id to assigned task (or None)
-        """
         allocations = {}
         available_robots = [r for r in robots if r.can_accept_task()]
 
@@ -89,16 +60,7 @@ class TaskAllocator:
         available_robots: List,
         tasks: List[Tuple]
     ) -> Dict[int, Optional[Tuple]]:
-        """
-        Greedy nearest assignment: assign each task to nearest available robot.
 
-        Args:
-            available_robots: List of available robots
-            tasks: List of tasks
-
-        Returns:
-            Allocations dictionary
-        """
         allocations = {}
         assigned_robots = set()
 
@@ -134,16 +96,7 @@ class TaskAllocator:
         available_robots: List,
         tasks: List[Tuple]
     ) -> Dict[int, Optional[Tuple]]:
-        """
-        Load balanced assignment: distribute tasks evenly across robots.
 
-        Args:
-            available_robots: List of available robots
-            tasks: List of tasks
-
-        Returns:
-            Allocations dictionary
-        """
         allocations = {}
         assigned_robots = set()
 
@@ -180,16 +133,6 @@ class TaskAllocator:
         available_robots: List,
         tasks: List[Tuple]
     ) -> Dict[int, Optional[Tuple]]:
-        """
-        Priority aware assignment: prioritize urgent tasks with best robots.
-
-        Args:
-            available_robots: List of available robots
-            tasks: List of tasks
-
-        Returns:
-            Allocations dictionary
-        """
         allocations = {}
         assigned_robots = set()
 
@@ -252,20 +195,10 @@ class TaskAllocator:
 
 
 class HungarianAllocator:
-    """
-    Hungarian Algorithm for Optimal Task Assignment.
 
-    Finds globally optimal assignment minimizing total travel distance.
-    More computationally expensive but better allocation quality.
-    """
 
     def __init__(self, num_robots: int = 5):
-        """
-        Initialize Hungarian allocator.
 
-        Args:
-            num_robots: Number of robots
-        """
         self.num_robots = num_robots
 
     def allocate_tasks(
@@ -273,16 +206,7 @@ class HungarianAllocator:
         robots: List,
         tasks: List[Tuple]
     ) -> Dict[int, Optional[Tuple]]:
-        """
-        Allocate tasks using Hungarian algorithm.
 
-        Args:
-            robots: List of robots
-            tasks: List of tasks
-
-        Returns:
-            Allocations dictionary
-        """
         available_robots = [r for r in robots if r.can_accept_task()]
 
         if not available_robots or not tasks:
