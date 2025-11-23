@@ -1,9 +1,4 @@
-"""
-Scheduler - Real-Time Task Scheduling and Resource Management
 
-Manages task execution order, timing constraints, and resource allocation.
-Implements priority-based and deadline-aware scheduling.
-"""
 
 import numpy as np
 from typing import List, Dict, Tuple, Optional, Set
@@ -14,28 +9,14 @@ logger = logging.getLogger(__name__)
 
 
 class TaskScheduler:
-    """
-    Real-time task scheduler with priority and deadline awareness.
 
-    Scheduling Policies:
-    - FIFO: First-in-first-out
-    - Priority: Highest priority first
-    - EDF: Earliest deadline first
-    - LLF: Least laxity first
-    """
 
     def __init__(
         self,
         num_robots: int = 5,
         scheduling_policy: str = 'priority',
     ):
-        """
-        Initialize task scheduler.
 
-        Args:
-            num_robots: Number of robots
-            scheduling_policy: Scheduling policy ('fifo', 'priority', 'edf', 'llf')
-        """
         self.num_robots = num_robots
         self.scheduling_policy = scheduling_policy
 
@@ -51,25 +32,12 @@ class TaskScheduler:
         logger.info(f"TaskScheduler initialized: policy={scheduling_policy}")
 
     def add_task(self, task: Tuple):
-        """
-        Add task to scheduler.
 
-        Args:
-            task: Task tuple (pickup_x, pickup_y, priority, delivery_x, delivery_y, deadline)
-        """
         self.task_queue.append(task)
         self.task_queue.sort(key=lambda t: self._priority_score(t), reverse=True)
 
     def get_next_task(self, robot_id: int) -> Optional[Tuple]:
-        """
-        Get next task for robot.
 
-        Args:
-            robot_id: Robot ID
-
-        Returns:
-            Next task or None if queue empty
-        """
         if not self.task_queue:
             return None
 
@@ -92,17 +60,7 @@ class TaskScheduler:
         return task
 
     def _priority_score(self, task: Tuple) -> float:
-        """
-        Compute priority score for task.
 
-        Lower deadline and higher priority increase score.
-
-        Args:
-            task: Task tuple
-
-        Returns:
-            Priority score
-        """
         priority = task[2]  # 1-10
         deadline = task[5]
 
@@ -113,11 +71,7 @@ class TaskScheduler:
         return score
 
     def _select_least_laxity(self) -> Tuple:
-        """
-        Select task with least laxity.
-
-        Laxity = deadline - processing_time
-        """
+        """Select task with least laxity.Laxity = deadline - processing_time"""
         least_laxity = None
         min_laxity = float('inf')
 
@@ -139,12 +93,7 @@ class TaskScheduler:
         return least_laxity
 
     def mark_task_complete(self, robot_id: int):
-        """
-        Mark task as completed.
 
-        Args:
-            robot_id: Robot ID
-        """
         if robot_id in self.in_progress:
             task = self.in_progress.pop(robot_id)
             self.completed_tasks.append(task)
@@ -199,11 +148,7 @@ class TaskScheduler:
 
 
 class ResourceAllocator:
-    """
-    Allocate shared resources (charging stations, work zones) to robots.
 
-    Manages resource conflicts and contention.
-    """
 
     def __init__(
         self,
@@ -211,14 +156,7 @@ class ResourceAllocator:
         num_charging_stations: int = 2,
         num_work_zones: int = 5,
     ):
-        """
-        Initialize resource allocator.
 
-        Args:
-            num_robots: Number of robots
-            num_charging_stations: Number of charging stations
-            num_work_zones: Number of work zones
-        """
         self.num_robots = num_robots
         self.num_charging_stations = num_charging_stations
         self.num_work_zones = num_work_zones
@@ -238,15 +176,7 @@ class ResourceAllocator:
         )
 
     def request_charging_station(self, robot_id: int) -> Optional[int]:
-        """
-        Request charging station for robot.
 
-        Args:
-            robot_id: Robot ID
-
-        Returns:
-            Station ID or None if unavailable
-        """
         if not self.charging_available:
             return None
 
@@ -256,12 +186,7 @@ class ResourceAllocator:
         return station_id
 
     def release_charging_station(self, robot_id: int):
-        """
-        Release charging station.
 
-        Args:
-            robot_id: Robot ID
-        """
         if robot_id in self.charging_allocations:
             station_id = self.charging_allocations[robot_id]
             if station_id is not None:
@@ -269,15 +194,7 @@ class ResourceAllocator:
             self.charging_allocations[robot_id] = None
 
     def request_work_zone(self, robot_id: int) -> Optional[int]:
-        """
-        Request work zone for robot.
 
-        Args:
-            robot_id: Robot ID
-
-        Returns:
-            Zone ID or None if unavailable
-        """
         if not self.zone_available:
             return None
 
@@ -287,12 +204,7 @@ class ResourceAllocator:
         return zone_id
 
     def release_work_zone(self, robot_id: int):
-        """
-        Release work zone.
 
-        Args:
-            robot_id: Robot ID
-        """
         if robot_id in self.zone_allocations:
             zone_id = self.zone_allocations[robot_id]
             if zone_id is not None:
