@@ -1,9 +1,4 @@
-"""
-Robot Class - Autonomous Mobile Robot (AMR) Model
 
-Implements differential drive kinematics with realistic physics.
-Handles robot state tracking, battery management, and task execution.
-"""
 
 import numpy as np
 import pybullet as p
@@ -14,20 +9,6 @@ logger = logging.getLogger(__name__)
 
 
 class Robot:
-    """
-    Autonomous Mobile Robot (AMR) with Differential Drive.
-
-    State:
-    - Position (x, y, θ)
-    - Velocity (vx, vy, ω)
-    - Battery level
-    - Current task (if assigned)
-
-    Dynamics:
-    - Differential drive kinematics
-    - Battery discharge based on velocity
-    - Simple collision model
-    """
 
     def __init__(
         self,
@@ -36,15 +17,7 @@ class Robot:
         config: Dict,
         client: int,
     ):
-        """
-        Initialize robot.
 
-        Args:
-            robot_id: Unique robot identifier
-            initial_position: (x, y, theta) initial pose
-            config: Configuration dictionary
-            client: PyBullet client ID
-        """
         self.robot_id = robot_id
         self.client = client
         self.config = config
@@ -89,15 +62,7 @@ class Robot:
         logger.info(f"Robot {robot_id} created at position {initial_position}")
 
     def _create_body(self, position: Tuple[float, float, float]) -> int:
-        """
-        Create robot body in PyBullet.
 
-        Args:
-            position: Initial position (x, y, z)
-
-        Returns:
-            body_id: PyBullet body ID
-        """
         # Create a cylinder to represent the robot
         shape_id = p.createCollisionShape(
             p.GEOM_CYLINDER,
@@ -134,13 +99,7 @@ class Robot:
         return body_id
 
     def set_velocity(self, linear_vel: float, angular_vel: float):
-        """
-        Set command velocities (will be limited and executed).
 
-        Args:
-            linear_vel: Linear velocity (m/s), will be clipped to max
-            angular_vel: Angular velocity (rad/s), will be clipped to max
-        """
         # Clamp to limits
         linear_vel = np.clip(linear_vel, -self.max_linear_velocity, self.max_linear_velocity)
         angular_vel = np.clip(angular_vel, -self.max_angular_velocity, self.max_angular_velocity)
@@ -148,10 +107,7 @@ class Robot:
         self.command_velocity = np.array([linear_vel, angular_vel], dtype=np.float32)
 
     def update(self):
-        """
-        Update robot state based on kinematics and battery.
-        This is called every physics step.
-        """
+
         # Get current position and orientation
         pos, orn = p.getBasePositionAndOrientation(self.body_id, physicsClientId=self.client)
         pos = np.array(pos[:2])  # Only x, y
@@ -199,12 +155,7 @@ class Robot:
         self._check_task_progress()
 
     def _update_battery(self, linear_vel: float):
-        """
-        Update battery level based on activity.
 
-        Args:
-            linear_vel: Current linear velocity
-        """
         if self.charging and self.battery_level < self.battery_capacity:
             # Charging
             charge_amount = self.battery_charge_rate
@@ -244,14 +195,7 @@ class Robot:
                 self.task_progress = 100.0
 
     def assign_task(self, task: Tuple):
-        """
-        Assign a task to this robot.
 
-        Task format: (pickup_x, pickup_y, priority, delivery_x, delivery_y, deadline)
-
-        Args:
-            task: Task tuple
-        """
         self.current_task = task
         self.has_task = True
         self.at_pickup = False
@@ -260,12 +204,7 @@ class Robot:
         self.completed_task = False
 
     def start_charging(self, station_id: int):
-        """
-        Start charging at a station.
 
-        Args:
-            station_id: Charging station ID
-        """
         self.charging = True
         self.charging_station_id = station_id
 
