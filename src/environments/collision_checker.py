@@ -1,9 +1,4 @@
-"""
-Collision Checker - Spatial Collision Detection
 
-Detects collisions between robots, with obstacles, and validates paths.
-Uses spatial hashing for efficient collision queries.
-"""
 
 import numpy as np
 from typing import List, Tuple, Optional, Set
@@ -13,15 +8,7 @@ logger = logging.getLogger(__name__)
 
 
 class CollisionChecker:
-    """
-    Spatial collision detection for multi-robot systems.
- 
-    Supports:
-    - Robot-robot collisions
-    - Robot-obstacle collisions
-    - Path validation
-    - Spatial queries using grid-based hashing
-    """
+
 
     def __init__(
         self,
@@ -30,15 +17,7 @@ class CollisionChecker:
         client: int = None,
         grid_size: float = 5.0,
     ):
-        """
-        Initialize collision checker.
 
-        Args:
-            robot_radius: Radius of robot for collision detection
-            warehouse_layout: WarehouseLayout object
-            client: PyBullet client ID
-            grid_size: Grid cell size for spatial hashing
-        """
         self.robot_radius = robot_radius
         self.warehouse_layout = warehouse_layout
         self.client = client
@@ -50,16 +29,7 @@ class CollisionChecker:
         logger.info(f"CollisionChecker initialized: robot_radius={robot_radius}")
 
     def check_robot_collision(self, robot1, robot2) -> bool:
-        """
-        Check collision between two robots.
 
-        Args:
-            robot1: First robot
-            robot2: Second robot
-
-        Returns:
-            True if robots collide
-        """
         pos1 = robot1.get_position()[:2]
         pos2 = robot2.get_position()[:2]
 
@@ -74,16 +44,7 @@ class CollisionChecker:
         return collides
 
     def check_obstacle_collision(self, robot, warehouse_layout) -> bool:
-        """
-        Check collision between robot and static obstacles.
 
-        Args:
-            robot: Robot object
-            warehouse_layout: WarehouseLayout object
-
-        Returns:
-            True if robot collides with obstacle
-        """
         if warehouse_layout is None:
             return False
 
@@ -101,16 +62,7 @@ class CollisionChecker:
         return False
 
     def _point_in_obstacle(self, point: np.ndarray, obstacle: dict) -> bool:
-        """
-        Check if point is inside an obstacle (shelf).
 
-        Args:
-            point: (x, y) point
-            obstacle: Obstacle dictionary with 'x', 'y', 'width', 'height'
-
-        Returns:
-            True if point is inside obstacle with buffer
-        """
         x, y = point
         obs_x = obstacle['x']
         obs_y = obstacle['y']
@@ -124,16 +76,7 @@ class CollisionChecker:
         )
 
     def _point_in_bounds(self, point: np.ndarray, warehouse_layout) -> bool:
-        """
-        Check if point is within warehouse bounds.
 
-        Args:
-            point: (x, y) point
-            warehouse_layout: WarehouseLayout object
-
-        Returns:
-            True if point is in bounds with buffer
-        """
         x, y = point
         buffer = self.robot_radius
 
@@ -149,18 +92,7 @@ class CollisionChecker:
         warehouse_layout=None,
         num_samples: int = 10
     ) -> bool:
-        """
-        Check if a straight-line path collides with obstacles.
 
-        Args:
-            start: Start position (x, y)
-            end: End position (x, y)
-            warehouse_layout: WarehouseLayout object
-            num_samples: Number of points to sample along path
-
-        Returns:
-            True if path collides with obstacle
-        """
         if warehouse_layout is None:
             return False
 
@@ -185,17 +117,7 @@ class CollisionChecker:
         nearby_robots_list: List,
         radius: float = 10.0
     ) -> List:
-        """
-        Get robots within a given radius.
 
-        Args:
-            robot: Query robot
-            nearby_robots_list: List of all robots
-            radius: Query radius
-
-        Returns:
-            List of nearby robots (excluding query robot)
-        """
         robot_pos = robot.get_position()[:2]
         nearby = []
 
@@ -212,15 +134,7 @@ class CollisionChecker:
         return sorted(nearby, key=lambda x: x[1])
 
     def get_collision_grid(self, robots: List) -> dict:
-        """
-        Build spatial hash grid for fast collision queries.
 
-        Args:
-            robots: List of robots
-
-        Returns:
-            Grid dictionary with robot indices at each cell
-        """
         grid = {}
 
         for robot in robots:
@@ -234,15 +148,7 @@ class CollisionChecker:
         return grid
 
     def _pos_to_grid_cell(self, pos: np.ndarray) -> Tuple[int, int]:
-        """
-        Convert position to grid cell.
 
-        Args:
-            pos: (x, y) position
-
-        Returns:
-            Grid cell (grid_x, grid_y)
-        """
         cell_x = int(pos[0] / self.grid_size)
         cell_y = int(pos[1] / self.grid_size)
         return (cell_x, cell_y)
@@ -253,17 +159,7 @@ class CollisionChecker:
         future_position: np.ndarray,
         other_robots: List
     ) -> bool:
-        """
-        Predict if robot will collide if moved to future position.
 
-        Args:
-            robot: Robot to check
-            future_position: Predicted position (x, y)
-            other_robots: List of other robots
-
-        Returns:
-            True if collision predicted
-        """
         collision_distance = 2 * self.robot_radius
 
         for other_robot in other_robots:
@@ -279,15 +175,7 @@ class CollisionChecker:
         return False
 
     def get_collision_pairs(self, robots: List) -> List[Tuple]:
-        """
-        Get all colliding robot pairs.
 
-        Args:
-            robots: List of robots
-
-        Returns:
-            List of (robot_id1, robot_id2) pairs that collide
-        """
         collisions = []
 
         for i in range(len(robots)):
@@ -302,16 +190,7 @@ class CollisionChecker:
         position: np.ndarray,
         warehouse_layout
     ) -> float:
-        """
-        Get minimum clearance to nearest obstacle.
 
-        Args:
-            position: (x, y) position
-            warehouse_layout: WarehouseLayout object
-
-        Returns:
-            Minimum distance to obstacle (can be negative if inside obstacle)
-        """
         if warehouse_layout is None:
             return float('inf')
 
@@ -343,16 +222,7 @@ class CollisionChecker:
         point: np.ndarray,
         obstacle: dict
     ) -> float:
-        """
-        Get distance from point to nearest part of obstacle.
 
-        Args:
-            point: (x, y) point
-            obstacle: Obstacle dictionary
-
-        Returns:
-            Distance to obstacle (negative if inside)
-        """
         x, y = point
         obs_x = obstacle['x']
         obs_y = obstacle['y']
