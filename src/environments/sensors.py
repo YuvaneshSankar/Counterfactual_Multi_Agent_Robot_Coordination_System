@@ -1,9 +1,4 @@
-"""
-Sensors Module - Robot Perception Sensors
 
-Implements LiDAR and other sensors for robot perception.
-Provides realistic observations for decentralized policies.
-"""
 
 import numpy as np
 from typing import List, Dict, Tuple, Optional
@@ -13,15 +8,7 @@ logger = logging.getLogger(__name__)
 
 
 class LiDARSensor:
-    """
-    2D LiDAR Sensor for obstacle detection.
 
-    Simulates a 2D LiDAR scanner with configurable:
-    - Number of beams (rays)
-    - Maximum range
-    - Field of view
-    - Angular resolution
-    """
 
     def __init__(
         self,
@@ -31,16 +18,7 @@ class LiDARSensor:
         max_range: float = 20.0,
         fov: float = 360.0,
     ):
-        """
-        Initialize LiDAR sensor.
 
-        Args:
-            robot: Robot object that this sensor belongs to
-            config: Configuration dictionary
-            num_beams: Number of laser beams
-            max_range: Maximum sensing range (meters)
-            fov: Field of view (degrees, 360 for full circle)
-        """
         self.robot = robot
         self.config = config
         self.num_beams = num_beams
@@ -66,18 +44,7 @@ class LiDARSensor:
         )
 
     def get_readings(self, warehouse_layout=None) -> np.ndarray:
-        """
-        Get LiDAR readings.
 
-        Simulates laser rays from robot position, checks for intersections
-        with obstacles and other robots.
-
-        Args:
-            warehouse_layout: WarehouseLayout object for obstacle checking
-
-        Returns:
-            readings: Normalized distance readings [num_beams] (0-1, where 1=max_range)
-        """
         robot_pos = self.robot.get_position()[:2]
         robot_yaw = self.robot.get_position()[2]
 
@@ -122,17 +89,7 @@ class LiDARSensor:
         direction: np.ndarray,
         warehouse_layout
     ) -> float:
-        """
-        Check ray-wall intersection distance.
 
-        Args:
-            start: Ray start position
-            direction: Ray direction (normalized)
-            warehouse_layout: WarehouseLayout object
-
-        Returns:
-            Distance to wall (max_range if no intersection)
-        """
         width = warehouse_layout.width
         height = warehouse_layout.height
 
@@ -187,17 +144,7 @@ class LiDARSensor:
         direction: np.ndarray,
         warehouse_layout
     ) -> float:
-        """
-        Check ray-shelf intersection distance.
 
-        Args:
-            start: Ray start position
-            direction: Ray direction (normalized)
-            warehouse_layout: WarehouseLayout object
-
-        Returns:
-            Distance to nearest shelf
-        """
         min_distance = self.max_range
 
         for shelf in warehouse_layout.shelves:
@@ -226,18 +173,7 @@ class LiDARSensor:
         box_w: float,
         box_h: float
     ) -> float:
-        """
-        Compute ray-box intersection using slab method.
 
-        Args:
-            start: Ray start position
-            direction: Ray direction
-            box_x, box_y: Box position
-            box_w, box_h: Box dimensions
-
-        Returns:
-            Distance to box (max_range if no intersection)
-        """
         # Box bounds
         x_min = box_x
         x_max = box_x + box_w
@@ -288,12 +224,7 @@ class LiDARSensor:
         return self.max_range
 
     def get_visualization_rays(self) -> List[Tuple]:
-        """
-        Get rays for visualization.
 
-        Returns:
-            List of (start, end) positions for each ray
-        """
         robot_pos = self.robot.get_position()[:2]
         robot_yaw = self.robot.get_position()[2]
 
@@ -313,20 +244,10 @@ class LiDARSensor:
 
 
 class OdometrySensor:
-    """
-    Odometry Sensor - Robot Pose and Velocity Tracking
 
-    Provides reliable estimates of robot position, orientation, and velocity.
-    """
 
     def __init__(self, robot, noise_level: float = 0.0):
-        """
-        Initialize odometry sensor.
 
-        Args:
-            robot: Robot object
-            noise_level: Gaussian noise standard deviation (0=no noise)
-        """
         self.robot = robot
         self.noise_level = noise_level
 
@@ -335,12 +256,7 @@ class OdometrySensor:
         self.heading_drift = 0.0
 
     def get_odometry(self) -> Dict:
-        """
-        Get odometry reading with optional noise.
 
-        Returns:
-            Dictionary with position, orientation, velocity
-        """
         pos = self.robot.get_position()
         vel = self.robot.get_velocity()
 
@@ -357,31 +273,14 @@ class OdometrySensor:
 
 
 class RangeToGoalSensor:
-    """
-    Range to Goal Sensor - Relative Position to Task Location
 
-    Provides relative distance and angle to current task destination.
-    """
 
     def __init__(self, robot):
-        """
-        Initialize range-to-goal sensor.
 
-        Args:
-            robot: Robot object
-        """
         self.robot = robot
 
     def get_range_to_goal(self, goal_position: Tuple) -> Dict:
-        """
-        Get range and angle to goal.
 
-        Args:
-            goal_position: Target (x, y) position
-
-        Returns:
-            Dictionary with distance and angle to goal
-        """
         robot_pos = self.robot.get_position()[:2]
         robot_yaw = self.robot.get_position()[2]
 
