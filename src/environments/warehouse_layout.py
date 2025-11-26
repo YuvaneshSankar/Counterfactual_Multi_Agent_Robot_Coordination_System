@@ -1,9 +1,4 @@
-"""
-Warehouse Layout - Map Generation and Environment Setup
 
-Creates warehouse structure with shelves, aisles, charging stations, and delivery zones.
-Builds physical objects in PyBullet simulation.
-"""
 
 import numpy as np
 import pybullet as p
@@ -14,15 +9,7 @@ logger = logging.getLogger(__name__)
 
 
 class WarehouseLayout:
-    """
-    Warehouse environment layout with shelves and zones.
 
-    Manages:
-    - Shelf placement and collision geometry
-    - Charging stations
-    - Delivery zones
-    - Aisle paths
-    """
 
     def __init__(
         self,
@@ -36,20 +23,7 @@ class WarehouseLayout:
         shelf_height: float = 2.0,
         aisle_width: float = 5.0,
     ):
-        """
-        Initialize warehouse layout.
 
-        Args:
-            width: Warehouse width (meters)
-            height: Warehouse height (meters)
-            num_shelves: Number of shelves
-            num_charging_stations: Number of charging stations
-            num_delivery_zones: Number of delivery zones
-            client: PyBullet client ID
-            shelf_width: Width of each shelf
-            shelf_height: Height of each shelf
-            aisle_width: Width of aisles between shelves
-        """
         self.width = width
         self.height = height
         self.num_shelves = num_shelves
@@ -76,13 +50,11 @@ class WarehouseLayout:
         )
 
     def _generate_layout(self):
-        """Generate warehouse layout with shelves and zones."""
         self._create_shelves()
         self._create_charging_stations()
         self._create_delivery_zones()
 
     def _create_shelves(self):
-        """Create shelf obstacles in warehouse."""
         margin = 5.0
         usable_width = self.width - 2 * margin
         usable_height = self.height - 2 * margin
@@ -116,16 +88,7 @@ class WarehouseLayout:
                 shelf_idx += 1
 
     def _create_shelf_body(self, x: float, y: float) -> int:
-        """
-        Create a physical shelf in PyBullet.
 
-        Args:
-            x: X position (center)
-            y: Y position (center)
-
-        Returns:
-            PyBullet body ID
-        """
         if self.client is None:
             return -1
 
@@ -159,7 +122,6 @@ class WarehouseLayout:
         return body_id
 
     def _create_charging_stations(self):
-        """Create charging stations at warehouse perimeter."""
         for i in range(self.num_charging_stations):
             if i % 2 == 0:
                 # Charging stations on left side
@@ -180,7 +142,6 @@ class WarehouseLayout:
             self.charging_stations.append(station)
 
     def _create_delivery_zones(self):
-        """Create delivery zones (output docks)."""
         margin = 5.0
 
         if self.num_delivery_zones == 1:
@@ -226,11 +187,7 @@ class WarehouseLayout:
             self.delivery_zones.append(zone)
 
     def build(self):
-        """
-        Build warehouse in simulation.
 
-        Creates physical objects for shelves and walls.
-        """
         if self.client is None:
             logger.warning("PyBullet client not available, skipping physical build")
             return
@@ -239,7 +196,6 @@ class WarehouseLayout:
         self._create_walls()
 
     def _create_walls(self):
-        """Create warehouse walls."""
         wall_thickness = 0.1
         wall_height = 0.5
 
@@ -275,17 +231,7 @@ class WarehouseLayout:
         height: float,
         wall_height: float
     ) -> int:
-        """
-        Create a wall segment.
 
-        Args:
-            x, y: Center position
-            width, height: Dimensions
-            wall_height: Height of wall
-
-        Returns:
-            PyBullet body ID
-        """
         collision_shape = p.createCollisionShape(
             p.GEOM_BOX,
             halfExtents=[width/2, height/2, wall_height/2],
@@ -311,15 +257,7 @@ class WarehouseLayout:
         return body_id
 
     def get_nearest_charging_station(self, position: Tuple[float, float]) -> Optional[Dict]:
-        """
-        Get nearest available charging station.
 
-        Args:
-            position: (x, y) position
-
-        Returns:
-            Nearest charging station or None
-        """
         available_stations = [s for s in self.charging_stations if s['available']]
 
         if not available_stations:
@@ -333,15 +271,7 @@ class WarehouseLayout:
         return nearest
 
     def get_nearest_delivery_zone(self, position: Tuple[float, float]) -> Optional[Dict]:
-        """
-        Get nearest delivery zone.
 
-        Args:
-            position: (x, y) position
-
-        Returns:
-            Nearest delivery zone or None
-        """
         if not self.delivery_zones:
             return None
 
@@ -357,16 +287,7 @@ class WarehouseLayout:
         position: Tuple[float, float],
         clearance: float = 1.0
     ) -> bool:
-        """
-        Check if position is valid (not in obstacle).
 
-        Args:
-            position: (x, y) position
-            clearance: Minimum clearance from obstacles
-
-        Returns:
-            True if position is valid
-        """
         x, y = position
 
         # Check bounds
@@ -393,16 +314,7 @@ class WarehouseLayout:
         num_positions: int = 10,
         clearance: float = 2.0
     ) -> List[Tuple[float, float]]:
-        """
-        Get free positions in warehouse.
-
-        Args:
-            num_positions: Number of positions to generate
-            clearance: Minimum clearance from obstacles
-
-        Returns:
-            List of free positions
-        """
+ 
         positions = []
         max_attempts = 1000
         attempts = 0
