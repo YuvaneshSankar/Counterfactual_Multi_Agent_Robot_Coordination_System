@@ -1,9 +1,4 @@
-"""
-Dashboard - Real-Time Training Monitoring
 
-Web-based dashboard for monitoring training progress, metrics, and performance.
-Uses Plotly Dash for interactive visualizations.
-"""
 
 import dash
 from dash import dcc, html, Input, Output
@@ -19,16 +14,6 @@ logger = logging.getLogger(__name__)
 
 
 class TrainingDashboard:
-    """
-    Real-time training monitoring dashboard.
-
-    Displays:
-    - Episode rewards over time
-    - Loss curves (actor and critic)
-    - Success rate and collision rate
-    - Battery efficiency
-    - Task completion metrics
-    """
 
     def __init__(
         self,
@@ -36,14 +21,7 @@ class TrainingDashboard:
         port: int = 8050,
         update_interval: int = 1000,
     ):
-        """
-        Initialize dashboard.
 
-        Args:
-            log_dir: Directory containing training logs
-            port: Port to run dashboard on
-            update_interval: Update interval in milliseconds
-        """
         self.log_dir = log_dir
         self.port = port
         self.update_interval = update_interval
@@ -67,7 +45,6 @@ class TrainingDashboard:
         logger.info(f"Dashboard initialized on port {port}")
 
     def _setup_layout(self):
-        """Setup dashboard layout."""
         self.app.layout = html.Div([
             html.H1(
                 'COMAR Training Dashboard',
@@ -122,7 +99,6 @@ class TrainingDashboard:
         ])
 
     def _setup_callbacks(self):
-        """Setup dashboard callbacks."""
 
         @self.app.callback(
             [
@@ -168,7 +144,6 @@ class TrainingDashboard:
             )
 
     def _load_metrics(self):
-        """Load metrics from log files."""
         metrics_file = os.path.join(self.log_dir, 'training_metrics.json')
 
         if os.path.exists(metrics_file):
@@ -193,7 +168,6 @@ class TrainingDashboard:
                 logger.error(f"Error loading metrics: {e}")
 
     def _create_reward_figure(self):
-        """Create episode reward figure."""
         steps = self.metrics_data['steps']
         rewards = self.metrics_data['episode_rewards']
 
@@ -238,7 +212,6 @@ class TrainingDashboard:
         return fig
 
     def _create_actor_loss_figure(self):
-        """Create actor loss figure."""
         losses = self.metrics_data['actor_loss']
 
         fig = go.Figure()
@@ -259,7 +232,6 @@ class TrainingDashboard:
         return fig
 
     def _create_critic_loss_figure(self):
-        """Create critic loss figure."""
         losses = self.metrics_data['critic_loss']
 
         fig = go.Figure()
@@ -280,7 +252,6 @@ class TrainingDashboard:
         return fig
 
     def _create_success_rate_figure(self):
-        """Create success rate figure."""
         success_rates = self.metrics_data['success_rate']
 
         fig = go.Figure()
@@ -303,7 +274,6 @@ class TrainingDashboard:
         return fig
 
     def _create_collision_rate_figure(self):
-        """Create collision rate figure."""
         collision_rates = self.metrics_data['collision_rate']
 
         fig = go.Figure()
@@ -347,26 +317,12 @@ class TrainingDashboard:
         return fig
 
     def run(self, debug: bool = False):
-        """
-        Run the dashboard server.
 
-        Args:
-            debug: Whether to run in debug mode
-        """
         logger.info(f"Starting dashboard on http://localhost:{self.port}")
         self.app.run_server(debug=debug, port=self.port)
 
 
 def create_dashboard(log_dir: str = 'results/logs', port: int = 8050):
-    """
-    Create and return dashboard instance.
 
-    Args:
-        log_dir: Log directory
-        port: Server port
-
-    Returns:
-        Dashboard instance
-    """
     dashboard = TrainingDashboard(log_dir=log_dir, port=port)
     return dashboard
