@@ -1,17 +1,4 @@
-"""
-Warehouse Environment - PyBullet Physics Simulation
 
-Core environment implementation for multi-agent warehouse robot coordination.
-Provides a Gymnasium-compatible interface with physics simulation using PyBullet.
-
-Key Features:
-- Multiple robots with differential drive kinematics
-- Dynamic task generation with priorities
-- Physics-based collision detection
-- Realistic battery management
-- Configurable warehouse layouts
-- Real-time rendering support
-"""
 
 import gym
 from gym import spaces
@@ -26,27 +13,6 @@ logger = logging.getLogger(__name__)
 
 
 class WarehouseEnv(gym.Env):
-    """
-    Multi-Agent Warehouse Environment.
-
-    Simulates autonomous mobile robots (AMRs) in a warehouse environment
-    performing pickup and delivery tasks.
-
-    State Space:
-    - Global state: positions, velocities, battery levels of all robots
-    - Tasks: locations, priorities, deadlines
-
-    Action Space (per robot):
-    - Linear velocity: [-1.0, 1.0] m/s
-    - Angular velocity: [-π/2, π/2] rad/s
-
-    Reward:
-    - Task completion: +10
-    - Time penalty: -0.01 per step
-    - Collision: -5 (robot-robot), -2 (obstacle)
-    - Battery depletion: -10
-    - Charging: +1
-    """
 
     def __init__(self, config: Dict, render: bool = False):
         """
@@ -147,13 +113,7 @@ class WarehouseEnv(gym.Env):
         logger.info(f"WarehouseEnv initialized: {self.num_robots} robots")
 
     def reset(self) -> Tuple[np.ndarray, Dict]:
-        """
-        Reset environment to initial state.
 
-        Returns:
-            observations: List of observations for each agent
-            info: Additional information
-        """
         self.current_step = 0
         self.episode_reward = 0.0
         self.completed_tasks = 0
@@ -210,18 +170,7 @@ class WarehouseEnv(gym.Env):
         return observations, {}
 
     def step(self, actions: np.ndarray) -> Tuple[List[np.ndarray], float, bool, Dict]:
-        """
-        Execute one environment step.
 
-        Args:
-            actions: Joint actions [num_robots, 2] with [linear_vel, angular_vel]
-
-        Returns:
-            observations: Updated observations
-            reward: Scalar reward (shared across agents)
-            done: Episode termination flag
-            info: Additional information
-        """
         self.current_step += 1
 
         # Execute actions
@@ -267,12 +216,7 @@ class WarehouseEnv(gym.Env):
         return observations, reward, done, info
 
     def _get_observations(self) -> List[np.ndarray]:
-        """
-        Get observations for each robot.
 
-        Returns:
-            observations: List of observation arrays [num_robots, obs_dim]
-        """
         observations = []
 
         for i, robot in enumerate(self.robots):
@@ -306,12 +250,7 @@ class WarehouseEnv(gym.Env):
         return observations
 
     def _compute_reward(self) -> float:
-        """
-        Compute shared reward for all agents.
 
-        Returns:
-            reward: Scalar reward value
-        """
         reward_config = self.config.get('rewards', {})
         reward = 0.0
 
@@ -353,7 +292,6 @@ class WarehouseEnv(gym.Env):
                 self.collisions += 1
 
     def _allocate_tasks(self):
-        """Allocate pending tasks to available robots."""
         available_robots = [r for r in self.robots if not r.has_task and r.battery_level > 20]
 
         for robot in available_robots:
@@ -362,7 +300,6 @@ class WarehouseEnv(gym.Env):
                 robot.assign_task(task)
 
     def _get_nearest_task(self, position: Tuple) -> Tuple:
-        """Get nearest pending task to a position."""
         if not self.task_generator.pending_tasks:
             return (0, 0, 0)
 
@@ -373,22 +310,15 @@ class WarehouseEnv(gym.Env):
         return nearest
 
     def render(self, mode: str = 'human'):
-        """Render environment."""
         if mode == 'human' and self.render_mode:
             p.stepSimulation(physicsClientId=self.client)
 
     def close(self):
-        """Close the environment."""
         if self.client is not None:
             p.disconnect(physicsClientId=self.client)
 
     def get_global_state(self) -> np.ndarray:
-        """
-        Get full global state (for centralized training).
 
-        Returns:
-            state: Flattened global state vector
-        """
         state_parts = []
 
         # Robot states
