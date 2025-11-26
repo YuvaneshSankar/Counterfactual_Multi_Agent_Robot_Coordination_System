@@ -1,9 +1,3 @@
-"""
-Task Generator - Dynamic Task Creation and Management
-
-Generates warehouse tasks (pickup/delivery) with priorities and deadlines.
-Implements Poisson process for realistic task arrival patterns.
-"""
 
 import numpy as np
 from typing import List, Tuple, Dict, Optional
@@ -14,17 +8,7 @@ logger = logging.getLogger(__name__)
 
 
 class TaskGenerator:
-    """
-    Generate and manage warehouse tasks.
 
-    Each task has:
-    - Pickup location (x, y)
-    - Delivery location (x, y)
-    - Priority (1-10, higher = more urgent)
-    - Deadline (steps until due)
-
-    Task format: (pickup_x, pickup_y, priority, delivery_x, delivery_y, deadline)
-    """
 
     def __init__(
         self,
@@ -35,17 +19,7 @@ class TaskGenerator:
         min_distance: float = 20.0,
         max_deadline: int = 500,
     ):
-        """
-        Initialize task generator.
 
-        Args:
-            warehouse_width: Warehouse width in meters
-            warehouse_height: Warehouse height in meters
-            arrival_rate: Task arrival rate (Poisson lambda parameter)
-            max_queue: Maximum pending tasks
-            min_distance: Minimum distance between pickup and delivery
-            max_deadline: Maximum deadline for tasks
-        """
         self.warehouse_width = warehouse_width
         self.warehouse_height = warehouse_height
         self.arrival_rate = arrival_rate
@@ -69,12 +43,7 @@ class TaskGenerator:
         )
 
     def _create_delivery_zones(self) -> List[Tuple[float, float]]:
-        """
-        Create predefined delivery zones.
 
-        Returns:
-            List of delivery zone locations
-        """
         # Place delivery zones at warehouse perimeter
         zones = []
         margin = 5.0
@@ -91,12 +60,7 @@ class TaskGenerator:
         return zones
 
     def _create_pickup_zones(self) -> List[Tuple[float, float]]:
-        """
-        Create predefined pickup zones (input dock areas).
 
-        Returns:
-            List of pickup zone locations
-        """
         zones = []
         margin = 5.0
 
@@ -113,10 +77,7 @@ class TaskGenerator:
         return zones
 
     def step(self):
-        """
-        Generate new tasks and update task queue.
-        Called once per environment step.
-        """
+
         self.current_step += 1
 
         # Generate new tasks based on Poisson process
@@ -135,12 +96,7 @@ class TaskGenerator:
         ]
 
     def _generate_task(self) -> Tuple:
-        """
-        Generate a single task.
 
-        Returns:
-            task: Task tuple (pickup_x, pickup_y, priority, delivery_x, delivery_y, deadline)
-        """
         # Random pickup location from pickup zones (with noise)
         pickup_zone = self.pickup_zones[np.random.randint(len(self.pickup_zones))]
         pickup_loc = (
@@ -188,25 +144,12 @@ class TaskGenerator:
         return task
 
     def add_task(self, task: Tuple):
-        """
-        Manually add a task to the queue.
 
-        Args:
-            task: Task tuple
-        """
         if len(self.pending_tasks) < self.max_queue:
             self.pending_tasks.append(task)
 
     def get_nearest_task(self, position: Tuple[float, float]) -> Optional[Tuple]:
-        """
-        Get nearest pending task to a position.
 
-        Args:
-            position: (x, y) position
-
-        Returns:
-            Nearest task or None if queue is empty
-        """
         if not self.pending_tasks:
             return None
 
@@ -217,12 +160,7 @@ class TaskGenerator:
         return nearest
 
     def get_highest_priority_task(self) -> Optional[Tuple]:
-        """
-        Get highest priority pending task.
 
-        Returns:
-            Highest priority task or None if queue is empty
-        """
         if not self.pending_tasks:
             return None
 
@@ -230,33 +168,18 @@ class TaskGenerator:
         return highest
 
     def complete_task(self, task: Tuple):
-        """
-        Mark a task as completed.
 
-        Args:
-            task: Task to mark as completed
-        """
         if task in self.pending_tasks:
             self.pending_tasks.remove(task)
             self.completed_tasks.append(task)
 
     def remove_task(self, task: Tuple):
-        """
-        Remove a task from pending queue.
 
-        Args:
-            task: Task to remove
-        """
         if task in self.pending_tasks:
             self.pending_tasks.remove(task)
 
     def get_queue_status(self) -> Dict:
-        """
-        Get status of task queue.
 
-        Returns:
-            Dictionary with queue statistics
-        """
         pending_priorities = [t[2] for t in self.pending_tasks]
         pending_deadlines = [t[5] for t in self.pending_tasks]
 
@@ -271,16 +194,10 @@ class TaskGenerator:
         }
 
     def get_pending_tasks(self) -> List[Tuple]:
-        """Get list of pending tasks."""
         return self.pending_tasks.copy()
 
     def get_task_distribution(self) -> Dict:
-        """
-        Get distribution of tasks by priority.
 
-        Returns:
-            Dictionary with priority distribution
-        """
         distribution = {}
         for task in self.pending_tasks:
             priority = task[2]
@@ -289,15 +206,7 @@ class TaskGenerator:
         return distribution
 
     def get_urgent_tasks(self, urgency_threshold: float = 0.3) -> List[Tuple]:
-        """
-        Get tasks that are close to deadline.
 
-        Args:
-            urgency_threshold: Fraction of deadline remaining (0-1)
-
-        Returns:
-            List of urgent tasks
-        """
         urgent = []
         current_deadline_fraction = 1.0
 
