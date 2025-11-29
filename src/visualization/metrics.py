@@ -1,9 +1,4 @@
-"""
-Metrics - Performance Metric Computation and Analysis
 
-Computes comprehensive performance metrics for warehouse robot coordination.
-Includes task completion, efficiency, collision, and coordination metrics.
-"""
 
 import numpy as np
 from typing import Dict, List, Tuple, Optional
@@ -14,24 +9,10 @@ logger = logging.getLogger(__name__)
 
 
 class PerformanceMetrics:
-    """
-    Comprehensive performance metrics for multi-robot warehouse system.
 
-    Metric Categories:
-    - Task Performance: completion rate, success rate, throughput
-    - Efficiency: time per task, distance traveled, makespan
-    - Safety: collision rate, near-misses
-    - Resource: battery efficiency, utilization
-    - Coordination: communication overhead, synchronization
-    """
 
     def __init__(self, num_robots: int = 5):
-        """
-        Initialize metrics computer.
 
-        Args:
-            num_robots: Number of robots
-        """
         self.num_robots = num_robots
 
         # Metric storage
@@ -46,17 +27,7 @@ class PerformanceMetrics:
         robots: List,
         task_generator,
     ) -> Dict:
-        """
-        Compute metrics for a single episode.
 
-        Args:
-            episode_data: Episode trajectory data
-            robots: List of robot objects
-            task_generator: Task generator object
-
-        Returns:
-            Dictionary of computed metrics
-        """
         metrics = {}
 
         # Task performance metrics
@@ -78,7 +49,6 @@ class PerformanceMetrics:
         return metrics
 
     def _compute_task_metrics(self, episode_data: Dict, task_generator) -> Dict:
-        """Compute task-related performance metrics."""
         completed_tasks = episode_data.get('completed_tasks', 0)
         total_tasks = len(task_generator.pending_tasks) + completed_tasks
         episode_steps = episode_data.get('steps', 1)
@@ -102,7 +72,6 @@ class PerformanceMetrics:
         }
 
     def _compute_efficiency_metrics(self, episode_data: Dict, robots: List) -> Dict:
-        """Compute efficiency metrics."""
         episode_steps = episode_data.get('steps', 1)
         completed_tasks = episode_data.get('completed_tasks', 0)
 
@@ -204,15 +173,7 @@ class PerformanceMetrics:
         }
 
     def compute_aggregate_metrics(self, window: int = 100) -> Dict:
-        """
-        Compute aggregate metrics over recent episodes.
 
-        Args:
-            window: Number of recent episodes to consider
-
-        Returns:
-            Aggregated metrics
-        """
         if not self.episode_metrics:
             return {}
 
@@ -233,7 +194,6 @@ class PerformanceMetrics:
         return aggregate
 
     def get_summary_statistics(self) -> Dict:
-        """Get summary statistics across all episodes."""
         if not self.episode_metrics:
             return {}
 
@@ -254,15 +214,7 @@ class PerformanceMetrics:
         return all_metrics
 
     def compare_to_baseline(self, baseline_metrics: Dict) -> Dict:
-        """
-        Compare current metrics to baseline.
 
-        Args:
-            baseline_metrics: Baseline metrics dictionary
-
-        Returns:
-            Comparison results
-        """
         if not self.aggregate_metrics:
             self.compute_aggregate_metrics()
 
@@ -282,12 +234,7 @@ class PerformanceMetrics:
         return comparison
 
     def export_metrics(self, filepath: str) -> None:
-        """
-        Export metrics to file.
 
-        Args:
-            filepath: Path to save metrics
-        """
         import json
 
         export_data = {
@@ -303,18 +250,14 @@ class PerformanceMetrics:
 
 
 class ComparisonMetrics:
-    """Compare performance of different algorithms or configurations."""
 
     def __init__(self):
-        """Initialize comparison metrics."""
         self.experiments: Dict[str, PerformanceMetrics] = {}
 
     def add_experiment(self, name: str, metrics: PerformanceMetrics):
-        """Add experiment results."""
         self.experiments[name] = metrics
 
     def compare_experiments(self) -> Dict:
-        """Compare all experiments."""
         comparison = {}
 
         if not self.experiments:
@@ -332,15 +275,7 @@ class ComparisonMetrics:
         return comparison
 
     def rank_experiments(self, metric: str = 'task_success_rate_mean') -> List[Tuple[str, float]]:
-        """
-        Rank experiments by a specific metric.
 
-        Args:
-            metric: Metric to rank by
-
-        Returns:
-            Sorted list of (experiment_name, metric_value)
-        """
         rankings = []
 
         for exp_name, metrics in self.experiments.items():
