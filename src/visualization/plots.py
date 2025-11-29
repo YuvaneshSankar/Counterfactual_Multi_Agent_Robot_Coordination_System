@@ -16,24 +16,10 @@ plt.rcParams['font.size'] = 10
 
 
 class PlotGenerator:
-    """
-    Generate static plots for analysis and publication.
 
-    Plot Types:
-    - Training curves (rewards, losses)
-    - Performance metrics over time
-    - Comparative analysis
-    - Distribution plots
-    - Heatmaps
-    """
 
     def __init__(self, save_dir: str = 'results/plots'):
-        """
-        Initialize plot generator.
 
-        Args:
-            save_dir: Directory to save plots
-        """
         self.save_dir = save_dir
         os.makedirs(save_dir, exist_ok=True)
 
@@ -47,16 +33,7 @@ class PlotGenerator:
         critic_losses: List[float],
         save_name: str = 'training_curves.png'
     ) -> None:
-        """
-        Plot training curves (rewards and losses).
 
-        Args:
-            steps: Training steps
-            rewards: Episode rewards
-            actor_losses: Actor losses
-            critic_losses: Critic losses
-            save_name: Filename to save
-        """
         fig, axes = plt.subplots(2, 2, figsize=(15, 10))
 
         # Episode rewards
@@ -106,13 +83,7 @@ class PlotGenerator:
         metrics: Dict[str, List[float]],
         save_name: str = 'performance_metrics.png'
     ) -> None:
-        """
-        Plot multiple performance metrics.
 
-        Args:
-            metrics: Dictionary of metric_name -> values
-            save_name: Filename to save
-        """
         num_metrics = len(metrics)
         cols = 2
         rows = (num_metrics + cols - 1) // cols
@@ -156,15 +127,7 @@ class PlotGenerator:
         metric_name: str = 'Success Rate',
         save_name: str = 'comparison.png'
     ) -> None:
-        """
-        Plot comparison between experiments.
 
-        Args:
-            experiment_names: List of experiment names
-            metric_values: Dictionary of experiment_name -> metric values
-            metric_name: Name of metric being compared
-            save_name: Filename to save
-        """
         fig, ax = plt.subplots(figsize=(12, 6))
 
         for exp_name in experiment_names:
@@ -193,16 +156,7 @@ class PlotGenerator:
         metric_name: str = 'Mean Reward',
         save_name: str = 'bar_comparison.png'
     ) -> None:
-        """
-        Plot bar chart comparison with error bars.
 
-        Args:
-            experiment_names: List of experiment names
-            metric_means: Mean values for each experiment
-            metric_stds: Standard deviations
-            metric_name: Name of metric
-            save_name: Filename to save
-        """
         fig, ax = plt.subplots(figsize=(10, 6))
 
         x_pos = np.arange(len(experiment_names))
@@ -250,16 +204,7 @@ class PlotGenerator:
         title: str = 'Heatmap',
         save_name: str = 'heatmap.png'
     ) -> None:
-        """
-        Plot heatmap.
 
-        Args:
-            data: 2D array of values
-            x_labels: Labels for x-axis
-            y_labels: Labels for y-axis
-            title: Plot title
-            save_name: Filename to save
-        """
         fig, ax = plt.subplots(figsize=(10, 8))
 
         im = ax.imshow(data, cmap='YlOrRd', aspect='auto')
@@ -299,15 +244,7 @@ class PlotGenerator:
         title: str = 'Box Plot Comparison',
         save_name: str = 'boxplot.png'
     ) -> None:
-        """
-        Plot box plot comparison.
 
-        Args:
-            data_dict: Dictionary of label -> data values
-            ylabel: Y-axis label
-            title: Plot title
-            save_name: Filename to save
-        """
         fig, ax = plt.subplots(figsize=(12, 6))
 
         labels = list(data_dict.keys())
@@ -343,13 +280,7 @@ class PlotGenerator:
         metrics_df,
         save_name: str = 'correlation.png'
     ) -> None:
-        """
-        Plot correlation matrix of metrics.
 
-        Args:
-            metrics_df: Pandas DataFrame with metrics
-            save_name: Filename to save
-        """
         fig, ax = plt.subplots(figsize=(12, 10))
 
         correlation = metrics_df.corr()
