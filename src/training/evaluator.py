@@ -1,10 +1,3 @@
-"""
-Evaluator - Evaluation and Metrics Computation
-
-Evaluates trained policies and computes performance metrics.
-Tracks success rate, efficiency, collision rate, and other KPIs.
-"""
-
 import numpy as np
 from typing import Dict, List, Optional
 import logging
@@ -13,24 +6,8 @@ logger = logging.getLogger(__name__)
 
 
 class PolicyEvaluator:
-    """
-    Evaluate trained COMA policy performance.
-
-    Metrics:
-    - Task success rate
-    - Average completion time
-    - Collision rate
-    - Battery efficiency
-    - Fleet utilization
-    """
 
     def __init__(self, num_robots: int = 5):
-        """
-        Initialize evaluator.
-
-        Args:
-            num_robots: Number of robots
-        """
         self.num_robots = num_robots
         self.evaluation_history: List[Dict] = []
 
@@ -41,18 +18,6 @@ class PolicyEvaluator:
         num_episodes: int = 10,
         render: bool = False,
     ) -> Dict:
-        """
-        Evaluate policy over multiple episodes.
-
-        Args:
-            env: Environment
-            algorithm: COMA algorithm
-            num_episodes: Number of evaluation episodes
-            render: Whether to render
-
-        Returns:
-            Evaluation metrics dictionary
-        """
         metrics = {
             'episode_rewards': [],
             'success_rates': [],
@@ -117,16 +82,6 @@ class PolicyEvaluator:
         rewards: List[float],
         info_list: List[Dict],
     ) -> Dict:
-        """
-        Compute metrics from trajectory data.
-
-        Args:
-            rewards: List of rewards per step
-            info_list: List of info dicts per step
-
-        Returns:
-            Computed metrics
-        """
         total_reward = np.sum(rewards)
         avg_reward_per_step = np.mean(rewards)
 
@@ -145,7 +100,6 @@ class PolicyEvaluator:
         }
 
     def get_summary(self) -> Dict:
-        """Get evaluation summary statistics."""
         if not self.evaluation_history:
             return {}
 
@@ -160,23 +114,11 @@ class PolicyEvaluator:
 
 
 class PerformanceMonitor:
-    """
-    Monitor and track performance metrics during training.
-    """
 
     def __init__(self):
-        """Initialize performance monitor."""
         self.metrics_history: Dict = {}
 
     def record_metric(self, name: str, value: float, step: int):
-        """
-        Record a metric value.
-
-        Args:
-            name: Metric name
-            value: Metric value
-            step: Training step
-        """
         if name not in self.metrics_history:
             self.metrics_history[name] = []
 
@@ -186,11 +128,9 @@ class PerformanceMonitor:
         })
 
     def get_metric_history(self, name: str) -> List[Dict]:
-        """Get history of a metric."""
         return self.metrics_history.get(name, [])
 
     def get_latest_metrics(self) -> Dict:
-        """Get latest value of all metrics."""
         latest = {}
         for name, history in self.metrics_history.items():
             if history:
@@ -198,7 +138,6 @@ class PerformanceMonitor:
         return latest
 
     def get_mean_metrics(self, window_size: int = 100) -> Dict:
-        """Get running mean of metrics."""
         means = {}
         for name, history in self.metrics_history.items():
             if len(history) > window_size:
@@ -210,7 +149,6 @@ class PerformanceMonitor:
         return means
 
     def get_statistics(self) -> Dict:
-        """Get overall statistics."""
         stats = {}
         for name, history in self.metrics_history.items():
             if history:
@@ -226,41 +164,31 @@ class PerformanceMonitor:
 
 
 class MetricComputer:
-    """
-    Compute and aggregate performance metrics.
-    """
 
     @staticmethod
     def compute_success_rate(completed_tasks: int, total_tasks: int) -> float:
-        """Compute success rate."""
         return completed_tasks / max(1, total_tasks)
 
     @staticmethod
     def compute_collision_rate(num_collisions: int, num_steps: int) -> float:
-        """Compute collision rate."""
         return num_collisions / max(1, num_steps)
 
     @staticmethod
     def compute_energy_efficiency(energy_used: float, distance_traveled: float) -> float:
-        """Compute energy efficiency (distance per unit energy)."""
         return distance_traveled / max(1, energy_used)
 
     @staticmethod
     def compute_fleet_utilization(robots_active: int, total_robots: int) -> float:
-        """Compute fleet utilization rate."""
         return robots_active / max(1, total_robots)
 
     @staticmethod
     def compute_average_task_time(total_time: float, num_tasks: int) -> float:
-        """Compute average time per task."""
         return total_time / max(1, num_tasks)
 
     @staticmethod
     def compute_makespan(task_times: List[float]) -> float:
-        """Compute makespan (total time for all tasks)."""
         return sum(task_times) if task_times else 0
 
     @staticmethod
     def compute_arrival_time_variance(arrival_times: List[float]) -> float:
-        """Compute variance in task arrival times."""
         return np.var(arrival_times) if arrival_times else 0
