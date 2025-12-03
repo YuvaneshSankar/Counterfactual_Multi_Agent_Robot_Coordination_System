@@ -1,10 +1,3 @@
-"""
-Curriculum Learning - Progressive Difficulty Scheduling
-
-Gradually increases task difficulty during training to improve sample efficiency
-and convergence. Implements curriculum stages and transitions.
-"""
-
 import numpy as np
 from typing import Dict, List, Tuple, Optional
 import logging
@@ -13,23 +6,8 @@ logger = logging.getLogger(__name__)
 
 
 class CurriculumLearning:
-    """
-    Curriculum learning scheduler for progressive training.
-
-    Gradually increases difficulty by:
-    - Adding more robots
-    - Increasing task arrival rate
-    - Expanding warehouse size
-    - Reducing battery capacity
-    """
 
     def __init__(self, config: Dict):
-        """
-        Initialize curriculum learning.
-
-        Args:
-            config: Configuration with curriculum parameters
-        """
         self.config = config
 
         # Extract curriculum config
@@ -67,21 +45,9 @@ class CurriculumLearning:
         logger.info(f"CurriculumLearning initialized with {len(self.stages)} stages")
 
     def get_current_stage(self) -> Dict:
-        """
-        Get current curriculum stage.
-
-        Returns:
-            Current stage configuration
-        """
         return self.stages[self.current_stage].copy()
 
     def update_step(self) -> Optional[Dict]:
-        """
-        Update curriculum (call every training step).
-
-        Returns:
-            Stage change info if stage changed, None otherwise
-        """
         self.steps_in_stage += 1
         self.total_steps += 1
 
@@ -97,7 +63,6 @@ class CurriculumLearning:
         return None
 
     def _transition_to_next_stage(self):
-        """Transition to next curriculum stage."""
         old_stage = self.current_stage
         self.current_stage += 1
         self.steps_in_stage = 0
@@ -108,16 +73,6 @@ class CurriculumLearning:
         )
 
     def should_increase_difficulty(self, mean_reward: float, threshold: float = 0.8) -> bool:
-        """
-        Check if should increase difficulty based on performance.
-
-        Args:
-            mean_reward: Mean reward over recent episodes
-            threshold: Performance threshold to increase difficulty
-
-        Returns:
-            True if should increase difficulty
-        """
         if not self.enabled or self.current_stage >= len(self.stages) - 1:
             return False
 
@@ -125,19 +80,12 @@ class CurriculumLearning:
         return mean_reward > threshold
 
     def get_difficulty_level(self) -> float:
-        """
-        Get current difficulty level (0-1).
-
-        Returns:
-            Difficulty level
-        """
         if not self.enabled:
             return 1.0
 
         return (self.current_stage + 1) / len(self.stages)
 
     def get_progress(self) -> Dict:
-        """Get curriculum progress."""
         current_config = self.stages[self.current_stage]
 
         return {
@@ -152,18 +100,12 @@ class CurriculumLearning:
         }
 
     def reset(self):
-        """Reset curriculum."""
         self.current_stage = 0
         self.steps_in_stage = 0
         self.total_steps = 0
 
 
 class AdaptiveCurriculum:
-    """
-    Adaptive curriculum that adjusts based on performance metrics.
-
-    Transitions stages when performance goals are met.
-    """
 
     def __init__(
         self,
@@ -171,14 +113,6 @@ class AdaptiveCurriculum:
         performance_threshold: float = 0.85,
         patience: int = 10000,
     ):
-        """
-        Initialize adaptive curriculum.
-
-        Args:
-            initial_config: Initial environment configuration
-            performance_threshold: Performance needed to advance
-            patience: Steps to wait before auto-advance
-        """
         self.config = initial_config
         self.performance_threshold = performance_threshold
         self.patience = patience
@@ -189,7 +123,6 @@ class AdaptiveCurriculum:
         self.max_recent_reward = -np.inf
 
     def record_performance(self, reward: float):
-        """Record episode reward."""
         self.recent_rewards.append(reward)
 
         # Keep recent window
@@ -200,7 +133,6 @@ class AdaptiveCurriculum:
         self.steps_since_advance += 1
 
     def should_advance(self) -> bool:
-        """Check if should advance curriculum."""
         if len(self.recent_rewards) < 50:
             return False
 
@@ -213,7 +145,6 @@ class AdaptiveCurriculum:
         return performance_met or patience_exceeded
 
     def get_current_difficulty(self) -> Dict:
-        """Get current difficulty settings."""
         mean_reward = np.mean(self.recent_rewards) if self.recent_rewards else 0
 
         # Adjust difficulty based on performance
