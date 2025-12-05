@@ -1,9 +1,4 @@
-#!/usr/bin/env python3
-"""
-Evaluation Script - Test Trained COMAR Agents
 
-Evaluates trained policies and computes comprehensive metrics.
-"""
 
 import argparse
 import yaml
@@ -13,7 +8,6 @@ import sys
 from pathlib import Path
 import numpy as np
 
-# Add project root to path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
@@ -31,7 +25,6 @@ logger = logging.getLogger(__name__)
 
 
 def parse_args():
-    """Parse command line arguments."""
     parser = argparse.ArgumentParser(description='Evaluate COMAR agents')
 
     parser.add_argument(
@@ -78,7 +71,6 @@ def parse_args():
 
 
 def load_config(config_path: str) -> dict:
-    """Load configuration."""
     with open(config_path, 'r') as f:
         config = yaml.safe_load(f)
     return config
@@ -91,12 +83,6 @@ def evaluate_policy(
     render: bool = False,
     deterministic: bool = True
 ):
-    """
-    Evaluate policy over multiple episodes.
-
-    Returns:
-        Dictionary with evaluation results
-    """
     episode_rewards = []
     episode_lengths = []
     success_rates = []
@@ -152,7 +138,6 @@ def evaluate_policy(
 
 
 def print_results(results: dict):
-    """Print evaluation results."""
     logger.info("\n" + "=" * 80)
     logger.info("EVALUATION RESULTS")
     logger.info("=" * 80)
@@ -166,7 +151,6 @@ def print_results(results: dict):
 
 
 def save_results(results: dict, output_path: str = 'results/evaluation.json'):
-    """Save evaluation results to file."""
     import json
     import os
 
@@ -179,7 +163,6 @@ def save_results(results: dict, output_path: str = 'results/evaluation.json'):
 
 
 def plot_results(results: dict, save_dir: str = 'results/plots'):
-    """Generate plots from evaluation results."""
     plotter = PlotGenerator(save_dir=save_dir)
 
     # Plot episode rewards
@@ -207,7 +190,6 @@ def plot_results(results: dict, save_dir: str = 'results/plots'):
 
 
 def main():
-    """Main evaluation function."""
     args = parse_args()
 
     # Load configuration
