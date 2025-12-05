@@ -1,9 +1,4 @@
 #!/usr/bin/env python3
-"""
-Visualization Script - Interactive Visualization of Trained Agents
-
-Visualizes trained policies with PyBullet rendering and overlays.
-"""
 
 import argparse
 import yaml
@@ -26,7 +21,6 @@ logger = logging.getLogger(__name__)
 
 
 def parse_args():
-    """Parse command line arguments."""
     parser = argparse.ArgumentParser(description='Visualize COMAR agents')
 
     parser.add_argument(
@@ -74,7 +68,6 @@ def parse_args():
 
 
 def load_config(config_path: str) -> dict:
-    """Load configuration."""
     with open(config_path, 'r') as f:
         config = yaml.safe_load(f)
     return config
@@ -89,18 +82,6 @@ def visualize_episode(
     show_communication: bool = False,
     slow_motion: float = 1.0
 ):
-    """
-    Visualize one episode with rendering.
-
-    Args:
-        env: Environment
-        algorithm: COMA algorithm
-        renderer: Renderer object
-        follow_robot_id: Robot to follow (None for overview)
-        show_paths: Whether to show paths
-        show_communication: Whether to show communication
-        slow_motion: Slow motion factor
-    """
     import time
 
     obs, _ = env.reset()
@@ -179,7 +160,6 @@ def visualize_episode(
 
 
 def main():
-    """Main visualization function."""
     args = parse_args()
 
     # Load configuration
