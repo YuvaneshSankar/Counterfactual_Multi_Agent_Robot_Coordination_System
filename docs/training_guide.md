@@ -334,3 +334,299 @@ A: Check learning rates, batch size, and reward shaping. Verify data is flowing 
 A: Yes, use different seed values and output directories for each.
 
 For more help, see documentation in `docs/` and inline code comments.
+
+---
+
+## Troubleshooting Guide
+
+### Problem: Training Loss Explodes (NaN values)
+
+**Symptoms:**
+- Actor/Critic loss becomes NaN
+- Rewards suddenly drop to zero
+- Training crashes
+
+**Solutions:**
+```yaml
+# Reduce learning rates
+training:
+  actor_lr: 1e-4  # Lower from 3e-4
+  critic_lr: 5e-4  # Lower from 1e-3
+
+# Add gradient clipping
+  grad_clip: 5.0  # Lower from 10.0
+
+# Increase batch size for stability
+  batch_size: 128
+```
+
+---
+
+### Problem: No Learning Progress (Flat Reward)
+
+**Symptoms:**
+- Reward stays constant for >50k steps
+- Agents don't move or move randomly
+- Task completion rate = 0%
+
+**Solutions:**
+
+1. **Check reward scaling:**
+   ```yaml
+   rewards:
+     task_completion: 10.0  # Increase if too small
+     time_step_penalty: -0.01  # Make sure penalty isn't too large
+   ```
+
+2. **Verify environment:**
+   ```bash
+   # Test environment manually
+   python -c "from src.environments.warehouse_env import WarehouseEnv; \
+              import yaml; \
+              config = yaml.safe_load(open('configs/default_config.yaml')); \
+              env = WarehouseEnv(config); \
+              obs, _ = env.reset(); \
+              print('Obs shape:', len(obs), 'x', len(obs[0]))"
+   ```
+
+3. **Reduce complexity temporarily:**
+   ```yaml
+   environment:
+     num_robots: 2  # Start simple
+     task_arrival_rate: 0.1
+   ```
+
+---
+
+### Problem: High Collision Rate
+
+**Symptoms:**
+- Robots constantly colliding
+- Negative rewards dominate
+- Training unstable
+
+**Solutions:**
+```yaml
+# Increase collision penalty
+rewards:
+  collision: -10.0  # Increase from -5.0
+
+# Add safety margin
+environment:
+  robot_radius: 0.6  # Increase from 0.5
+
+# Improve LiDAR
+  lidar_range: 25.0  # Increase from 20.0
+```
+
+---
+
+### Problem: Out of Memory (OOM)
+
+**Symptoms:**
+- CUDA out of memory error
+- System freezes
+- Training crashes after X steps
+
+**Solutions:**
+```yaml
+# Reduce batch size
+training:
+  batch_size: 32  # Lower from 64
+
+# Reduce buffer size
+  buffer_size: 50000  # Lower from 100000
+
+# Reduce episode length
+environment:
+  max_episode_steps: 500  # Lower from 1000
+```
+
+Or use CPU if GPU memory is insufficient:
+```bash
+python scripts/train.py --device cpu
+```
+
+---
+
+### Problem: Slow Training Speed
+
+**Symptoms:**
+- < 100 steps/second on GPU
+- < 10 steps/second on CPU
+
+**Solutions:**
+
+1. **Profile bottlenecks:**
+   ```bash
+   python -m cProfile -o profile.stats scripts/train.py --config configs/small_warehouse.yaml
+   python -c "import pstats; p = pstats.Stats('profile.stats'); p.sort_stats('cumulative').print_stats(20)"
+   ```
+
+2. **Optimize config:**
+   ```yaml
+   environment:
+     render: false  # Disable rendering
+     max_episode_steps: 500  # Shorter episodes
+   ```
+
+3. **Increase batch size (if memory allows):**
+   ```yaml
+   training:
+     batch_size: 128  # Larger batches = fewer updates
+   ```
+
+---
+
+## Advanced Training Techniques
+
+### 1. Curriculum Learning
+
+Progressively increase difficulty for better convergence:
+
+```yaml
+curriculum:
+  enabled: true
+  stages:
+    stage1:
+      num_robots: 2
+      task_arrival_rate: 0.1
+      duration: 100000
+    stage2:
+      num_robots: 5
+      task_arrival_rate: 0.5
+      duration: 200000
+    stage3:
+      num_robots: 10
+      task_arrival_rate: 1.0
+      duration: 200000
+```
+
+**Benefits:**
+- Faster initial learning
+- Better final performance
+- More stable training
+
+---
+
+### 2. Hyperparameter Tuning with Grid Search
+
+```bash
+# Create tuning script
+for lr in 1e-4 3e-4 1e-3; do
+  for bs in 32 64 128; do
+    python scripts/train.py \
+      --config configs/default_config.yaml \
+      --actor-lr $lr \
+      --batch-size $bs \
+      --seed 42 \
+      --output-dir "results/tune_lr${lr}_bs${bs}"
+  done
+done
+
+# Compare results
+python scripts/benchmark.py --configs results/tune_*/config.yaml
+```
+
+---
+
+### 3. Transfer Learning
+
+Use pretrained model as starting point:
+
+```bash
+# Train on small warehouse
+python scripts/train.py --config configs/small_warehouse.yaml
+
+# Fine-tune on large warehouse
+python scripts/train.py \
+  --config configs/large_warehouse.yaml \
+  --checkpoint results/checkpoints/small_warehouse_best.pt \
+  --actor-lr 1e-4  # Lower LR for fine-tuning
+```
+
+---
+
+### 4. Multi-Seed Training for Robustness
+
+```bash
+# Train with multiple random seeds
+for seed in 42 123 456 789 1024; do
+  python scripts/train.py \
+    --config configs/default_config.yaml \
+    --seed $seed \
+    --output-dir "results/seed_${seed}" &
+done
+wait
+
+# Aggregate results
+python scripts/benchmark.py \
+  --configs results/seed_*/config.yaml \
+  --names "Seed 42" "Seed 123" "Seed 456" "Seed 789" "Seed 1024"
+```
+
+---
+
+### 5. Distributed Training (Advanced)
+
+For training on multiple GPUs:
+
+```bash
+# Train on 2 GPUs (if available)
+CUDA_VISIBLE_DEVICES=0 python scripts/train.py --config configs/large_warehouse.yaml --device cuda &
+CUDA_VISIBLE_DEVICES=1 python scripts/train.py --config configs/large_warehouse.yaml --device cuda --seed 123 &
+wait
+```
+
+---
+
+## Performance Benchmarks
+
+### Expected Training Metrics
+
+| Stage | Episodes | Mean Reward | Success Rate | Collision Rate |
+|-------|----------|-------------|--------------|----------------|
+| **Early** | 0-50k | -20 to 0 | 0-10% | 20-40% |
+| **Mid** | 50k-200k | 0 to 50 | 10-50% | 10-20% |
+| **Late** | 200k-500k | 50 to 150 | 50-80% | 5-10% |
+| **Converged** | 500k+ | 150+ | 80-95% | < 5% |
+
+### Hardware Performance
+
+| Hardware | Steps/Sec | Episodes/Hour | Time to 500k |
+|----------|-----------|---------------|--------------|
+| **CPU (8 cores)** | 50-100 | 60-120 | 24-48 hrs |
+| **GPU (RTX 3060)** | 500-800 | 600-900 | 4-8 hrs |
+| **GPU (RTX 3080)** | 1000-1500 | 1200-1800 | 2-4 hrs |
+| **GPU (A100)** | 2000-3000 | 2400-3600 | 1-2 hrs |
+
+---
+
+## Best Practices Checklist
+
+Before starting training:
+
+- [ ] Verify environment setup: `python -c "import torch; import pybullet; print('OK')"`
+- [ ] Test config loads: `python -c "import yaml; yaml.safe_load(open('configs/default_config.yaml'))"`
+- [ ] Check GPU availability: `python -c "import torch; print(torch.cuda.is_available())"`
+- [ ] Set random seed for reproducibility
+- [ ] Create output directory: `mkdir -p results/checkpoints results/logs`
+- [ ] Enable checkpointing in config
+- [ ] Monitor with TensorBoard: `tensorboard --logdir results/logs`
+
+During training:
+
+- [ ] Monitor loss curves (should decrease)
+- [ ] Check reward trends (should increase)
+- [ ] Watch for NaN values
+- [ ] Verify checkpoint saves every N steps
+- [ ] Monitor GPU/CPU utilization
+- [ ] Check for memory leaks
+
+After training:
+
+- [ ] Evaluate on multiple episodes (20+)
+- [ ] Visualize learned behaviors
+- [ ] Compare with baseline/random policy
+- [ ] Save final model and config
+- [ ] Document hyperparameters and results
