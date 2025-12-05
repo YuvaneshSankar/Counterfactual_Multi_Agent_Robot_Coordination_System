@@ -146,3 +146,169 @@ P(k tasks in interval) = (λ^k * e^(-λ)) / k!
 ## Configuration
 
 See `configs/default_config.yaml` for all environment parameters.
+
+---
+
+## Environment Scenarios
+
+### Small Warehouse (Training)
+
+Simplified scenario for initial training and debugging:
+
+| Parameter | Value | Purpose |
+|-----------|-------|---------|
+| **Warehouse Size** | 50m × 40m | Smaller for faster learning |
+| **Num Robots** | 2-3 | Reduced complexity |
+| **Task Arrival Rate** | 0.1-0.2 | Sparse tasks |
+| **Episode Length** | 500 steps | Shorter episodes |
+| **Obstacles** | 5 shelves | Minimal obstacles |
+
+**Use Case**: Initial training, hyperparameter tuning, debugging
+
+---
+
+### Medium Warehouse (Standard)
+
+Balanced scenario for general training:
+
+| Parameter | Value | Purpose |
+|-----------|-------|---------|
+| **Warehouse Size** | 100m × 80m | Standard warehouse |
+| **Num Robots** | 5 | Moderate coordination |
+| **Task Arrival Rate** | 0.5 | Regular task flow |
+| **Episode Length** | 1000 steps | Standard duration |
+| **Obstacles** | 10-15 shelves | Realistic navigation |
+
+**Use Case**: Main training, evaluation, benchmarking
+
+---
+
+### Large Warehouse (Challenge)
+
+Complex scenario for testing scalability:
+
+| Parameter | Value | Purpose |
+|-----------|-------|---------|
+| **Warehouse Size** | 150m × 120m | Large-scale |
+| **Num Robots** | 10+ | High coordination demand |
+| **Task Arrival Rate** | 1.0+ | High task density |
+| **Episode Length** | 2000 steps | Extended operation |
+| **Obstacles** | 20+ shelves | Complex navigation |
+
+**Use Case**: Stress testing, scalability evaluation, advanced research
+
+---
+
+## Common Use Cases
+
+### 1. Battery Management Testing
+
+```yaml
+environment:
+  battery_capacity: 50.0  # Reduced capacity
+  battery_discharge_rate: 0.2  # Faster drain
+  num_charging_stations: 3  # Multiple stations
+```
+
+**Focus**: Tests charging strategy and battery-aware coordination
+
+### 2. High-Priority Tasks
+
+```yaml
+task_generator:
+  priority_range: [7, 10]  # Only high-priority
+  deadline_range: [50, 100]  # Tight deadlines
+```
+
+**Focus**: Tests urgency handling and task prioritization
+
+### 3. Dense Robot Coordination
+
+```yaml
+environment:
+  num_robots: 10
+  warehouse_size: {width: 80, height: 60}  # Smaller space
+  collision_penalty: -10.0  # Higher penalty
+```
+
+**Focus**: Tests collision avoidance and dense coordination
+
+### 4. Sparse Long-Range Tasks
+
+```yaml
+environment:
+  warehouse_size: {width: 150, height: 120}
+  task_arrival_rate: 0.1
+  task_spread: large  # Tasks far apart
+```
+
+**Focus**: Tests path planning and long-distance coordination
+
+---
+
+## Observation Space Details
+
+### Complete Observation Breakdown (35D)
+
+| Component | Dimensions | Range | Description |
+|-----------|------------|-------|-------------|
+| **Position** | 2 | [-1, 1] | Normalized x, y position |
+| **Velocity** | 2 | [-1, 1] | Normalized linear and angular velocity |
+| **Battery** | 1 | [-1, 1] | Normalized battery level |
+| **Current Task** | 6 | [-1, 1] | Pickup (2), priority (1), delivery (2), deadline (1) |
+| **Nearest Task** | 2 | [-1, 1] | Relative position to nearest pending task |
+| **Nearby Robots** | 6 | [-1, 1] | Relative positions of 3 nearest robots (x, y each) |
+| **LiDAR** | 16 | [-1, 1] | Distance readings in 16 directions |
+
+**Total**: 2 + 2 + 1 + 6 + 2 + 6 + 16 = **35 dimensions**
+
+### LiDAR Configuration
+
+```
+Beam angles: [0°, 22.5°, 45°, 67.5°, 90°, 112.5°, 135°, 157.5°,
+              180°, 202.5°, 225°, 247.5°, 270°, 292.5°, 315°, 337.5°]
+Max range: 20m
+Normalization: distance / max_range → [0, 1] → [-1, 1]
+```
+
+---
+
+## Tips for Environment Customization
+
+### Adding New Obstacles
+
+```python
+# In warehouse_layout.py
+def add_custom_obstacle(self, position, size, shape='box'):
+    if shape == 'box':
+        collision_shape = p.createCollisionShape(
+            p.GEOM_BOX, halfExtents=[size[0]/2, size[1]/2, size[2]/2]
+        )
+    # Create visual and collision shapes
+    obstacle_id = p.createMultiBody(baseMass=0, ...)
+    self.obstacles.append(obstacle_id)
+```
+
+### Modifying Reward Function
+
+```python
+# In warehouse_env.py, modify _compute_reward()
+def _compute_reward(self, ...):
+    reward = 0.0
+    reward += self.config['rewards']['task_completion'] * completed_tasks
+    reward += self.config['rewards']['collision'] * collisions
+    reward += self.config['rewards']['time_step_penalty']
+    # Add custom rewards here
+    return reward
+```
+
+### Custom Task Generation
+
+```python
+# In task_generator.py
+def generate_priority_clusters(self):
+    # Generate tasks in spatial clusters
+    cluster_centers = [(x1, y1), (x2, y2), ...]
+    for center in cluster_centers:
+        self.add_task_near(center, radius=10.0)
+```
