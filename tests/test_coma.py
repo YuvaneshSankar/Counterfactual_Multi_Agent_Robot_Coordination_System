@@ -1,8 +1,3 @@
-"""
-Test COMA Algorithm - Unit Tests for COMA Components
-
-Tests actor, critic, replay buffer, and algorithm.
-"""
 
 import unittest
 import torch
@@ -21,7 +16,7 @@ from src.algorithms.replay_buffer import ReplayBuffer
 
 
 class TestActorNetwork(unittest.TestCase):
-    """Test actor network."""
+
 
     def setUp(self):
         """Setup actor."""
@@ -36,11 +31,11 @@ class TestActorNetwork(unittest.TestCase):
         )
 
     def test_initialization(self):
-        """Test network initializes."""
+
         self.assertIsNotNone(self.actor)
 
     def test_forward_pass(self):
-        """Test forward pass."""
+
         batch_size = 32
         obs = torch.randn(batch_size, self.obs_dim)
 
@@ -50,7 +45,7 @@ class TestActorNetwork(unittest.TestCase):
         self.assertEqual(log_std.shape, (batch_size, self.action_dim))
 
     def test_sample_action(self):
-        """Test action sampling."""
+
         obs = torch.randn(1, self.obs_dim)
 
         action, log_prob = self.actor.sample_action(obs)
@@ -59,7 +54,7 @@ class TestActorNetwork(unittest.TestCase):
         self.assertEqual(log_prob.shape, (1,))
 
     def test_log_prob_computation(self):
-        """Test log probability computation."""
+
         obs = torch.randn(10, self.obs_dim)
         actions = torch.randn(10, self.action_dim)
 
@@ -68,18 +63,17 @@ class TestActorNetwork(unittest.TestCase):
         self.assertEqual(log_probs.shape, (10,))
 
     def test_deterministic_action(self):
-        """Test deterministic action selection."""
+
         obs = torch.randn(1, self.obs_dim)
 
         action1 = self.actor.get_action(obs, deterministic=True)
         action2 = self.actor.get_action(obs, deterministic=True)
 
-        # Should be same
         self.assertTrue(torch.allclose(action1, action2))
 
 
 class TestCriticNetwork(unittest.TestCase):
-    """Test critic network."""
+
 
     def setUp(self):
         """Setup critic."""
@@ -96,11 +90,9 @@ class TestCriticNetwork(unittest.TestCase):
         )
 
     def test_initialization(self):
-        """Test critic initializes."""
         self.assertIsNotNone(self.critic)
 
     def test_forward_pass(self):
-        """Test forward pass."""
         batch_size = 32
         state = torch.randn(batch_size, self.state_dim)
         actions = torch.randn(batch_size, self.num_agents, self.action_dim)
@@ -110,7 +102,6 @@ class TestCriticNetwork(unittest.TestCase):
         self.assertEqual(q_values.shape, (batch_size, self.num_agents))
 
     def test_counterfactual_baseline(self):
-        """Test counterfactual baseline computation."""
         batch_size = 16
         state = torch.randn(batch_size, self.state_dim)
         actions = torch.randn(batch_size, self.num_agents, self.action_dim)
@@ -124,10 +115,9 @@ class TestCriticNetwork(unittest.TestCase):
 
 
 class TestReplayBuffer(unittest.TestCase):
-    """Test replay buffer."""
 
     def setUp(self):
-        """Setup buffer."""
+
         self.capacity = 1000
         self.state_dim = 50
         self.obs_dim = 20
@@ -143,12 +133,10 @@ class TestReplayBuffer(unittest.TestCase):
         )
 
     def test_initialization(self):
-        """Test buffer initializes."""
         self.assertEqual(len(self.buffer), 0)
         self.assertEqual(self.buffer.capacity, self.capacity)
 
     def test_add_experience(self):
-        """Test adding experience."""
         state = np.random.randn(self.state_dim)
         obs = [np.random.randn(self.obs_dim) for _ in range(self.num_agents)]
         actions = np.random.randn(self.num_agents, self.action_dim)
@@ -162,8 +150,6 @@ class TestReplayBuffer(unittest.TestCase):
         self.assertEqual(len(self.buffer), 1)
 
     def test_sample(self):
-        """Test sampling from buffer."""
-        # Fill buffer
         for _ in range(100):
             state = np.random.randn(self.state_dim)
             obs = [np.random.randn(self.obs_dim) for _ in range(self.num_agents)]
@@ -175,7 +161,6 @@ class TestReplayBuffer(unittest.TestCase):
 
             self.buffer.add(state, obs, actions, reward, next_state, next_obs, done)
 
-        # Sample
         batch = self.buffer.sample(32)
 
         self.assertIn('states', batch)
@@ -184,8 +169,7 @@ class TestReplayBuffer(unittest.TestCase):
         self.assertEqual(batch['states'].shape[0], 32)
 
     def test_buffer_overflow(self):
-        """Test buffer handles overflow."""
-        # Add more than capacity
+
         for i in range(self.capacity + 100):
             state = np.random.randn(self.state_dim)
             obs = [np.random.randn(self.obs_dim) for _ in range(self.num_agents)]
@@ -197,15 +181,14 @@ class TestReplayBuffer(unittest.TestCase):
 
             self.buffer.add(state, obs, actions, reward, next_state, next_obs, done)
 
-        # Should not exceed capacity
         self.assertEqual(len(self.buffer), self.capacity)
 
 
 class TestCOMAAlgorithm(unittest.TestCase):
-    """Test COMA algorithm."""
+
 
     def setUp(self):
-        """Setup COMA."""
+
         self.state_dim = 50
         self.obs_dim = 20
         self.action_dim = 2
@@ -233,12 +216,10 @@ class TestCOMAAlgorithm(unittest.TestCase):
         )
 
     def test_initialization(self):
-        """Test COMA initializes."""
         self.assertIsNotNone(self.coma)
         self.assertEqual(self.coma.num_agents, self.num_agents)
 
     def test_select_actions(self):
-        """Test action selection."""
         obs = [np.random.randn(self.obs_dim) for _ in range(self.num_agents)]
 
         actions, info = self.coma.select_actions(obs, deterministic=False)
@@ -247,8 +228,6 @@ class TestCOMAAlgorithm(unittest.TestCase):
         self.assertIsInstance(info, dict)
 
     def test_update(self):
-        """Test algorithm update."""
-        # Fill buffer
         for _ in range(100):
             state = np.random.randn(self.state_dim)
             obs = [np.random.randn(self.obs_dim) for _ in range(self.num_agents)]
@@ -262,7 +241,7 @@ class TestCOMAAlgorithm(unittest.TestCase):
                 state, obs, actions, reward, next_state, next_obs, done
             )
 
-        # Sample and update
+
         batch = self.coma.replay_buffer.sample(32)
 
         update_info = self.coma.update(
@@ -279,26 +258,21 @@ class TestCOMAAlgorithm(unittest.TestCase):
         self.assertIn('critic_loss', update_info)
 
     def test_checkpoint_save_load(self):
-        """Test checkpoint save and load."""
+
         import tempfile
         import os
 
-        # Create temporary file
         with tempfile.NamedTemporaryFile(delete=False, suffix='.pt') as f:
             checkpoint_path = f.name
 
         try:
-            # Save
             self.coma.save_checkpoint(checkpoint_path)
 
-            # Load
             self.coma.load_checkpoint(checkpoint_path)
 
-            # Should load without error
             self.assertTrue(True)
 
         finally:
-            # Cleanup
             if os.path.exists(checkpoint_path):
                 os.remove(checkpoint_path)
 
