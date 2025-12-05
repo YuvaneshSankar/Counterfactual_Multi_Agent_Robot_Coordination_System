@@ -332,3 +332,126 @@ This modular architecture enables:
 - Independent component development
 - Clear separation of concerns
 - Simple extension and customization
+
+---
+
+## System Requirements
+
+### Hardware Requirements
+
+| Component | Minimum | Recommended |
+|-----------|---------|-------------|
+| **CPU** | 4 cores | 8+ cores |
+| **RAM** | 8 GB | 16+ GB |
+| **GPU** | None (CPU training) | NVIDIA GPU with 6+ GB VRAM |
+| **Storage** | 10 GB | 50+ GB (for logs, checkpoints) |
+
+### Software Dependencies
+
+#### Core Dependencies
+
+| Package | Version | Purpose |
+|---------|---------|---------|
+| **Python** | 3.8+ | Programming language |
+| **PyTorch** | 2.0+ | Deep learning framework |
+| **PyBullet** | 3.2+ | Physics simulation |
+| **NumPy** | 1.21+ | Numerical computations |
+| **Gym** | 0.26+ | RL environment interface |
+
+#### Visualization & Monitoring
+
+| Package | Version | Purpose |
+|---------|---------|---------|
+| **Matplotlib** | 3.5+ | Plotting and visualization |
+| **TensorBoard** | 2.10+ | Training metrics logging |
+| **Dash/Plotly** | 5.0+ | Real-time dashboard |
+| **OpenCV** | 4.5+ | Video recording |
+
+#### Configuration & Utilities
+
+| Package | Version | Purpose |
+|---------|---------|---------|
+| **PyYAML** | 6.0+ | Configuration file parsing |
+| **Logging** | Built-in | System logging |
+| **argparse** | Built-in | Command-line argument parsing |
+
+### Installation
+
+```bash
+# Clone repository
+git clone https://github.com/YuvaneshSankar/CMARCOS.git
+cd CMARCOS
+
+# Create virtual environment
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Install dependencies
+pip install -r Requirements.txt
+
+# Verify installation
+python -c "import torch; import pybullet; print('Setup successful!')"
+```
+
+---
+
+## Performance Considerations
+
+### Training Performance
+
+- **GPU Acceleration**: 5-10x speedup compared to CPU
+- **Batch Size**: Larger batches (64-128) improve GPU utilization
+- **Parallel Environments**: Not currently supported (future work)
+- **Expected Training Time**:
+  - CPU: ~24-48 hours for 500k episodes
+  - GPU (RTX 3080): ~4-8 hours for 500k episodes
+
+### Memory Usage
+
+- **Environment**: ~500 MB per instance
+- **Replay Buffer**: ~2-4 GB (depends on buffer size)
+- **Networks**: ~50 MB (actor + critic)
+- **Total Peak**: ~8-12 GB RAM typical
+
+### Optimization Tips
+
+1. **Use GPU** when available for 5-10x speedup
+2. **Increase batch size** on high-memory systems
+3. **Reduce episode length** during initial training
+4. **Enable curriculum learning** for faster convergence
+5. **Monitor memory usage** to avoid OOM errors
+6. **Use checkpointing** to resume interrupted training
+
+---
+
+## Deployment Architecture
+
+For production deployment, the architecture separates into:
+
+```
+┌─────────────────────────────────────────────┐
+│         DEPLOYMENT (INFERENCE ONLY)         │
+├─────────────────────────────────────────────┤
+│                                             │
+│  ┌──────────────────────────────────────┐  │
+│  │  Trained Actor Networks (N models)    │  │
+│  │  - Loaded from checkpoints           │  │
+│  │  - Inference mode (no gradients)     │  │
+│  └────────────┬─────────────────────────┘  │
+│               │                             │
+│               ↓                             │
+│  ┌──────────────────────────────────────┐  │
+│  │  Environment (Production)             │  │
+│  │  - Real robots or high-fidelity sim   │  │
+│  │  - No training/logging overhead       │  │
+│  └──────────────────────────────────────┘  │
+│                                             │
+└─────────────────────────────────────────────┘
+```
+
+**Key differences from training:**
+- No critic network needed
+- No replay buffer
+- Deterministic action selection
+- Reduced memory footprint (~500 MB)
+- Real-time inference (<1ms per action)
