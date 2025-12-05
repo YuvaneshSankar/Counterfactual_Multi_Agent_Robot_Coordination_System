@@ -1,9 +1,4 @@
-#!/usr/bin/env python3
-"""
-Benchmark Script - Compare Different Configurations
 
-Benchmarks COMAR with different hyperparameters and configurations.
-"""
 
 import argparse
 import yaml
@@ -15,7 +10,7 @@ import numpy as np
 import json
 from datetime import datetime
 
-# Add project root to path
+
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
@@ -29,7 +24,6 @@ logger = logging.getLogger(__name__)
 
 
 def parse_args():
-    """Parse command line arguments."""
     parser = argparse.ArgumentParser(description='Benchmark COMAR')
 
     parser.add_argument(
@@ -69,7 +63,6 @@ def parse_args():
 
 
 def load_config(config_path: str) -> dict:
-    """Load configuration."""
     with open(config_path, 'r') as f:
         config = yaml.safe_load(f)
     return config
@@ -80,12 +73,6 @@ def evaluate_configuration(
     checkpoint_path: str,
     num_episodes: int = 20
 ) -> dict:
-    """
-    Evaluate a single configuration.
-
-    Returns:
-        Dictionary with performance metrics
-    """
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
     # Create environment
@@ -183,16 +170,6 @@ def compare_results(
     results: dict,
     names: list
 ) -> dict:
-    """
-    Compare results from multiple configurations.
-
-    Args:
-        results: Dictionary mapping config_name -> results
-        names: List of configuration names
-
-    Returns:
-        Comparison dictionary
-    """
     comparison = {
         'mean_rewards': {},
         'std_rewards': {},
@@ -219,7 +196,6 @@ def generate_comparison_plots(
     names: list,
     output_dir: str
 ):
-    """Generate comparison plots."""
     plotter = PlotGenerator(save_dir=output_dir)
 
     # Extract rewards for each config
@@ -265,7 +241,6 @@ def save_results(
     comparison: dict,
     output_dir: str
 ):
-    """Save results to files."""
     import os
     os.makedirs(output_dir, exist_ok=True)
 
@@ -283,7 +258,6 @@ def save_results(
 
 
 def print_comparison(comparison: dict, names: list):
-    """Print comparison table."""
     logger.info("\n" + "=" * 100)
     logger.info("BENCHMARK COMPARISON")
     logger.info("=" * 100)
@@ -310,7 +284,6 @@ def print_comparison(comparison: dict, names: list):
 
 
 def main():
-    """Main benchmark function."""
     args = parse_args()
 
     # Validate inputs
