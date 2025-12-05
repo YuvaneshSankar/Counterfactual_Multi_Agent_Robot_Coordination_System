@@ -1,9 +1,4 @@
-#!/usr/bin/env python3
-"""
-Training Script - Main Entry Point for COMAR Training
 
-Trains COMA agents in the warehouse environment with full monitoring.
-"""
 
 import argparse
 import yaml
@@ -13,7 +8,7 @@ import os
 import sys
 from pathlib import Path
 
-# Add project root to path
+
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
@@ -44,7 +39,6 @@ logger = logging.getLogger(__name__)
 
 
 def parse_args():
-    """Parse command line arguments."""
     parser = argparse.ArgumentParser(description='Train COMAR agents')
 
     parser.add_argument(
@@ -86,7 +80,6 @@ def parse_args():
 
 
 def load_config(config_path: str) -> dict:
-    """Load configuration from YAML file."""
     with open(config_path, 'r') as f:
         config = yaml.safe_load(f)
 
@@ -95,7 +88,6 @@ def load_config(config_path: str) -> dict:
 
 
 def set_seed(seed: int):
-    """Set random seeds for reproducibility."""
     torch.manual_seed(seed)
     torch.cuda.manual_seed_all(seed)
     import numpy as np
@@ -107,14 +99,12 @@ def set_seed(seed: int):
 
 
 def create_environment(config: dict, render: bool = False):
-    """Create warehouse environment."""
     env = WarehouseEnv(config=config, render=render)
     logger.info(f"Environment created with {env.num_robots} robots")
     return env
 
 
 def create_algorithm(config: dict, env, device: torch.device):
-    """Create COMA algorithm."""
     # Get dimensions from environment
     state_dim = env.state_space.shape[0]
     obs_dim = env.observation_space.shape[0]
@@ -136,7 +126,6 @@ def create_algorithm(config: dict, env, device: torch.device):
 
 
 def setup_callbacks(config: dict) -> CallbackManager:
-    """Setup training callbacks."""
     callback_manager = CallbackManager()
 
     # Logging callback
@@ -173,7 +162,6 @@ def setup_callbacks(config: dict) -> CallbackManager:
 
 
 def start_dashboard(log_dir: str, port: int = 8050):
-    """Start monitoring dashboard in background thread."""
     dashboard = create_dashboard(log_dir=log_dir, port=port)
     dashboard_thread = threading.Thread(target=dashboard.run, daemon=True)
     dashboard_thread.start()
@@ -182,7 +170,6 @@ def start_dashboard(log_dir: str, port: int = 8050):
 
 
 def main():
-    """Main training function."""
     # Parse arguments
     args = parse_args()
 
