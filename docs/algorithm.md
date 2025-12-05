@@ -255,6 +255,58 @@ for step in range(total_steps):
 - **Actor Loss**: Should decrease over time
 - **Critic Loss**: Should decrease over time
 
+---
+
+## Recommended Hyperparameters
+
+### Learning Rates
+
+| Parameter | Value | Description |
+|-----------|-------|-------------|
+| **Actor LR** | 3e-4 | Learning rate for policy networks |
+| **Critic LR** | 1e-3 | Learning rate for value network (higher for faster convergence) |
+| **LR Schedule** | Cosine Annealing | Gradually reduces LR over training |
+
+### Network Architecture
+
+| Parameter | Value | Description |
+|-----------|-------|-------------|
+| **Hidden Sizes** | [256, 256] | Two hidden layers with 256 units each |
+| **Activation** | ReLU | Non-linear activation function |
+| **Layer Norm** | True | Stabilizes training |
+| **Dropout Rate** | 0.0 | No dropout by default (can add 0.1-0.2 if overfitting) |
+
+### COMA-Specific Parameters
+
+| Parameter | Value | Description |
+|-----------|-------|-------------|
+| **Num Samples** | 10 | Number of counterfactual actions to sample |
+| **GAE Lambda** | 0.95 | Generalized Advantage Estimation parameter |
+| **Discount (γ)** | 0.99 | Future reward discount factor |
+| **Entropy Coeff** | 0.01 | Encourages exploration |
+
+### Training Configuration
+
+| Parameter | Value | Description |
+|-----------|-------|-------------|
+| **Batch Size** | 64 | Number of transitions per update |
+| **Buffer Size** | 100,000 | Replay buffer capacity |
+| **Target Update** | Soft (τ=0.005) | Polyak averaging for target network |
+| **Max Episodes** | 500,000 | Total training episodes |
+| **Grad Clip** | 10.0 | Gradient clipping threshold |
+
+### Environment-Specific
+
+| Parameter | Value | Description |
+|-----------|-------|-------------|
+| **Num Robots** | 5-10 | Start with 5, increase with curriculum |
+| **Task Arrival Rate** | 0.5-1.0 | Tasks per timestep |
+| **Episode Length** | 500 | Max steps per episode |
+
+> **Tip**: Start with conservative values and increase complexity gradually using curriculum learning for better convergence.
+
+---
+
 ## References
 
 - [COMA: Counterfactual Multi-Agent Policy Gradients](https://arxiv.org/abs/1705.08926)
